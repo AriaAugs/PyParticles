@@ -1,3 +1,3 @@
-from PyParticles.particles import types
+from pyparticles.particles import types
 
 types.test()
