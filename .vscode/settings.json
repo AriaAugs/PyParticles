@@ -1,0 +1,6 @@
+{
+    "pylint.args": [
+        "--unsafe-load-any-extension=y",
+        "--jobs=0"
+    ]
+}

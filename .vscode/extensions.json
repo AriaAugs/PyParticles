@@ -1,0 +1,13 @@
+{
+    "recommendations": [
+        "ms-python.pylint",
+        "njpwerner.autodocstring",
+        "oderwat.indent-rainbow",
+        "ms-python.vscode-pylance",
+        "ms-python.python",
+        "ms-python.debugpy",
+        "kevinrose.vsc-python-indent",
+        "gruntfuggly.todo-tree",
+        "dmitrydorofeev.empty-indent"
+    ]
+}
