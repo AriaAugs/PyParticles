@@ -4,12 +4,11 @@ from pyparticles.particles import properties
 class TestParticle(
     properties.GravityParticle,
     properties.BaseParticle):
-    """_summary_
+    """Test particle
 
-    Args:
-        properties (_type_): _description_
-        properties (_type_): _description_
+    TODO: replace with actual particle later
     """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.image = pygame.Surface(0, 0, 10, 10)

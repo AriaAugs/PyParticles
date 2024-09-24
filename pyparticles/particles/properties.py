@@ -23,7 +23,6 @@ class BaseParticle(pygame.sprite.DirtySprite):
             recognized:
             - 'groups' (list): List of groups to add this sprite to. Defaults to None.
     """
-
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             if key == 'groups':
