@@ -1,4 +1,6 @@
 import pygame
+from pyparticles.engine import utils
+from pyparticles.engine import sim as simulation
 
 class BaseParticle(pygame.sprite.DirtySprite):
     """Base class for all other particles.
@@ -29,6 +31,7 @@ class BaseParticle(pygame.sprite.DirtySprite):
                 pygame.sprite.DirtySprite.__init__(self, *value)
                 return
         pygame.sprite.DirtySprite.__init__(self)
+        self.dirty = 1 # doesn't do anything besides getting PyLint to quiet down
 
     def update(self, **kwargs):
         """Method to control sprite behavior.
@@ -67,7 +70,22 @@ class GravityParticle(BaseParticle):
     def update(self, **kwargs):
         if self.dirty != 0:
             return
-        # do logic for moving/updating
-        # dirty bit gets set to 1 if needed
-        # call BaseParticle.update() if the dirty bit isn't set
-        BaseParticle.update(self, **kwargs)
+        # apply gravity and clamp the new position
+        sim: simulation.ParticleSim = kwargs['sim']
+        pos = sim.get_pos(self.topleft)
+        new_pos = utils.vec_to_ints(pos + self.gravity)
+        new_pos = sim.clamp_pos(new_pos)
+        # if we can't move because we're at the edge, do nothing and call super().update()
+        if pos == new_pos:
+            super().update(**kwargs)
+            return
+        # check if we can move to the position, otherwise check if the blocking particle can move
+        dest = sim.get_cell(new_pos)
+        if dest is None:
+            sim.move_particle(self, new_pos)
+            self.dirty = 1
+        elif dest.dirty == 0:
+            dest.update(**kwargs)
+            if sim.get_cell(new_pos) is None:
+                sim.move_particle(self, new_pos)
+                self.dirty = 1
