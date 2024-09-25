@@ -2,6 +2,13 @@ import pygame
 from pyparticles.engine import utils
 from pyparticles.engine import sim as simulation
 
+# TODO: add chained physics resolution, meaning particles will call `update()` on other
+# update-able particles that are blocking thier movement. This will allow for cool things,
+# such as entire piles of gravtity-affected particles falling at once or fluids flowing
+# more smoothly. However, this will be difficult since we need to track which particles
+# have been called in the resolution chain to prevent infinite loops and repeat work,
+# but this tracking value must also be reset after each chain resolves
+
 class BaseParticle(pygame.sprite.DirtySprite):
     """Base class for all other particles.
 
@@ -21,7 +28,7 @@ class BaseParticle(pygame.sprite.DirtySprite):
         - layer (int): Which layer to draw this sprite on. Defaults to 0.
 
     Args:
-        **kwargs: Variable length list of keyword arguments. The following keyword arguments are
+        **kwargs (any): Variable length list of keyword arguments. The following keyword arguments are
             recognized:
             - 'groups' (list): List of groups to add this sprite to. Defaults to None.
     """
@@ -40,7 +47,6 @@ class BaseParticle(pygame.sprite.DirtySprite):
         subclasses. These implementations should be prefaced by `if self.dirty != 0: pass` to
         prevent the particle from being updated multiple times per frame.
         """
-        pass
 
 
 class GravityParticle(BaseParticle):
@@ -84,8 +90,3 @@ class GravityParticle(BaseParticle):
         if dest is None:
             sim.move_particle(self, new_pos)
             self.dirty = 1
-        elif dest.dirty == 0:
-            dest.update(**kwargs)
-            if sim.get_cell(new_pos) is None:
-                sim.move_particle(self, new_pos)
-                self.dirty = 1
