@@ -10,7 +10,7 @@ class TestParticle(
     """
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.image = pygame.Surface(0, 0, 10, 10)
+        super().__init__(**kwargs, gravity=(0,1))
+        self.image = pygame.Surface((10, 10))
         self.image.fill('brown')
         self.rect = self.image.get_rect()

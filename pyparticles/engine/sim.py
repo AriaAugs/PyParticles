@@ -63,8 +63,8 @@ class ParticleSim():
             tuple: The clamped grid position.
         """
         x, y = pos
-        x = utils.clamp_int(x, 0, self._sim_width-1)
-        y = utils.clamp_int(y, 0, self._sim_height - 1)
+        x = utils.clamp(x, 0, self._sim_width-1)
+        y = utils.clamp(y, 0, self._sim_height - 1)
         return (x, y)
 
     def get_cell(self, pos):
