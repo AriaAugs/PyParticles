@@ -28,8 +28,8 @@ class BaseParticle(pygame.sprite.DirtySprite):
         - layer (int): Which layer to draw this sprite on. Defaults to 0.
 
     Args:
-        **kwargs (any): Variable length list of keyword arguments. The following keyword arguments are
-            recognized:
+        **kwargs (any): Variable length list of keyword arguments. The following keyword arguments
+            are recognized:
             - 'groups' (list): List of groups to add this sprite to. Defaults to None.
     """
     def __init__(self, **kwargs):
@@ -78,7 +78,7 @@ class GravityParticle(BaseParticle):
             return
         # apply gravity and clamp the new position
         sim: simulation.ParticleSim = kwargs['sim']
-        pos = sim.get_pos(self.topleft)
+        pos = sim.get_pos(self.rect.topleft)
         new_pos = utils.vec_to_ints(pos + self.gravity)
         new_pos = sim.clamp_pos(new_pos)
         # if we can't move because we're at the edge, do nothing and call super().update()
