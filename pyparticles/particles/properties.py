@@ -1,4 +1,5 @@
 import pygame
+from typing import Any, Optional
 from pyparticles.engine import utils
 from pyparticles.engine import sim as simulation
 
@@ -28,14 +29,24 @@ class BaseParticle(pygame.sprite.DirtySprite):
     Attributes:
         dirty (int): Indicates if this sprite is dirty. If so, it will be redrawn next frame.
             0 means the sprite is clean, 1 means it is dirty, and 2 means it is always dirty.
+        image (pygame.Surface): The image for this sprite.
+        rect (pygame.Rect): The rectangle corresponding to the location and size of this sprite.
     """
-    def __init__(self, **kwargs):
+
+    dirty: int
+    image: pygame.Surface | None
+    rect: pygame.Rect | None
+
+    def __init__(self, **kwargs:dict[str, Any]):
         for key, value in kwargs.items():
             if key == 'groups':
-                pygame.sprite.DirtySprite.__init__(self, *value)
+                pygame.sprite.DirtySprite.__init__(self, *value: _SpriteSupportsGroup)
                 return
         pygame.sprite.DirtySprite.__init__(self)
-        self.dirty = 1 # doesn't do anything besides making PyLint quiet down
+        # initialize attributes to default values (mostly to calm PyLint down)
+        self.dirty = 1
+        self.image = None
+        self.rect = None
 
     def update(self, **kwargs):
         """Method to control sprite behavior.
@@ -62,6 +73,9 @@ class GravityParticle(BaseParticle):
     Attributes:
         gravity (pygame.Vector2): 2-D vector representing the gravity applied to this particle.
     """
+
+    gravity:pygame.Vector2
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.gravity = pygame.Vector2(0, 0)
@@ -77,11 +91,11 @@ class GravityParticle(BaseParticle):
                         print('  Expected a Vector2 or Vector2 arguments')
                         print(f'  Got: {value}')
 
-    def update(self, **kwargs):
+    def update(self, **kwargs:dict[str,Any]) -> None:
         if self.dirty != 0:
             return
         # apply gravity and clamp the new position
-        sim: simulation.ParticleSim = kwargs['sim']
+        sim:simulation.ParticleSim = kwargs['sim']
         pos = sim.get_pos(self.rect.topleft)
         new_pos = utils.vec_to_ints(pos + self.gravity)
         new_pos = sim.clamp_pos(new_pos)

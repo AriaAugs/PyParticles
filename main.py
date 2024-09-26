@@ -1,6 +1,17 @@
+from typing import Optional
 from pyparticles.particles import types
 from pyparticles.engine import sim as simulation
 import pygame
+
+# TODO: Update code to use type hints
+#       Attribute type hints will be placed between class docstring and __init__()
+# TODO: Update docstrings once typehints have been added
+# TODO: Clean up import order
+# TODO: Add module-level docstrings
+# TODO: Re-organize files
+#       Rename 'sim.py' to 'simulation.py'
+#       Rename 'particles' package to 'objects'
+#       Rename 'types.py' to 'particles.py'
 
 if __name__ == '__main__':
     pygame.init()
@@ -38,3 +49,8 @@ if __name__ == '__main__':
         screen.blit(sim.image, (0, 0))
         pygame.display.flip()
         clock.tick(fps)
+
+def test(x:int, y:int=0) -> Optional[str]:
+    if x == 7:
+        return 'test'
+    return None

@@ -8,6 +8,7 @@
         "ms-python.debugpy",
         "kevinrose.vsc-python-indent",
         "gruntfuggly.todo-tree",
-        "dmitrydorofeev.empty-indent"
+        "dmitrydorofeev.empty-indent",
+        "ms-python.mypy-type-checker"
     ]
 }
