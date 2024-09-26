@@ -1,0 +1,81 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "runCode",
+            "command": "${command:python.interpreterPath}",
+            "group": {
+                "kind": "build",
+            //    "isDefault": true
+            },
+            "args": [
+                "-m", "main"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "echo": true,
+                "panel": "shared",
+                "focus": true
+            }
+        },
+        {
+            "label": "generateNewDocs",
+            "command": "${command:python.interpreterPath}",
+            "group": {
+                "kind": "build",
+            //    "isDefault": true
+            },
+            "args": [
+                "-m", "pdoc",
+                "--force",
+                "--html",
+                "-o", "./docs/",
+                "./pyparticles/"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "echo": true,
+                "panel": "shared",
+                "focus": true
+            }
+        },
+        {
+            "label": "removeOldDocs",
+            "command": "rm",
+            "group": {
+                "kind": "build",
+            //    "isDefault": true
+            },
+            "args": [
+                "-rf", "./docs/"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "echo": true,
+                "panel": "shared",
+                "focus": true
+            }
+        },
+        {
+            "label": "fullBuild",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "removeOldDocs",
+                "generateNewDocs",
+                "runCode"
+            ]
+        }
+    ]
+}
