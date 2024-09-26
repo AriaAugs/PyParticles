@@ -14,3 +14,7 @@ class TestParticle(
         self.image = pygame.Surface((10, 10))
         self.image.fill('brown')
         self.rect = self.image.get_rect()
+
+    def update(self, **kwargs):
+        if self.dirty == 0:
+            super().update(**kwargs)

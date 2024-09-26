@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.1">
-<title>PyParticles.render API documentation</title>
+<title>pyparticles.particles.types API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
@@ -22,7 +22,7 @@ hljs.highlightAll();
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>PyParticles.render</code></h1>
+<h1 class="title">Module <code>pyparticles.particles.types</code></h1>
 </header>
 <section id="section-intro">
 </section>
@@ -33,6 +33,54 @@ hljs.highlightAll();
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="pyparticles.particles.types.TestParticle"><code class="flex name class">
+<span>class <span class="ident">TestParticle</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Test particle</p>
+<p>TODO: replace with actual particle later</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TestParticle(
+    properties.GravityParticle,
+    properties.BaseParticle):
+    &#34;&#34;&#34;Test particle
+
+    TODO: replace with actual particle later
+    &#34;&#34;&#34;
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs, gravity=(0,1))
+        self.image = pygame.Surface((10, 10))
+        self.image.fill(&#39;brown&#39;)
+        self.rect = self.image.get_rect()
+
+    def update(self, **kwargs):
+        if self.dirty == 0:
+            super().update(**kwargs)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pyparticles.particles.properties.GravityParticle" href="properties.html#pyparticles.particles.properties.GravityParticle">GravityParticle</a></li>
+<li><a title="pyparticles.particles.properties.BaseParticle" href="properties.html#pyparticles.particles.properties.BaseParticle">BaseParticle</a></li>
+<li>pygame.sprite.DirtySprite</li>
+<li>pygame.sprite.Sprite</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="pyparticles.particles.properties.GravityParticle" href="properties.html#pyparticles.particles.properties.GravityParticle">GravityParticle</a></b></code>:
+<ul class="hlist">
+<li><code><a title="pyparticles.particles.properties.GravityParticle.update" href="properties.html#pyparticles.particles.properties.BaseParticle.update">update</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -42,7 +90,14 @@ hljs.highlightAll();
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="PyParticles" href="../index.html">PyParticles</a></code></li>
+<li><code><a title="pyparticles.particles" href="index.html">pyparticles.particles</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="pyparticles.particles.types.TestParticle" href="#pyparticles.particles.types.TestParticle">TestParticle</a></code></h4>
+</li>
 </ul>
 </li>
 </ul>

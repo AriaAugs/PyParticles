@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.1">
-<title>PyParticles.particles.classes API documentation</title>
+<title>pyparticles.engine API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
@@ -22,97 +22,28 @@ hljs.highlightAll();
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>PyParticles.particles.classes</code></h1>
+<h1 class="title">Module <code>pyparticles.engine</code></h1>
 </header>
 <section id="section-intro">
 </section>
 <section>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
-<h2 class="section-title" id="header-classes">Classes</h2>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt id="PyParticles.particles.classes.BaseParticle"><code class="flex name class">
-<span>class <span class="ident">BaseParticle</span></span>
-<span>(</span><span>*groups)</span>
-</code></dt>
+<dt><code class="name"><a title="pyparticles.engine.sim" href="sim.html">pyparticles.engine.sim</a></code></dt>
 <dd>
-<div class="desc"><p>Base class for all other particles.</p>
-<p>Subclasses must assign <code>image</code> and <code>rect</code> attributes for the sprites to render properly.</p>
-<p>The following DirtySprite attributes may be overridden for specific behavior:
-- dirty (int): 0 for not dirty, 1 for dirty, 2 for always dirty. Defaults to 1.
-- blendmode (int): See the <code>special_flags</code> argument for <code>pygame.Surface.blit()</code>.
-Defaults to 0.
-- source_rect (pygame.Rect): Area of <code>self.image</code> to draw when rendering this sprite.
-Defaults to None.
-- visible (int): 0 for invisible, 1 for visible. Defaults to 1.
-- layer (int): Which layer to draw this sprite on. Defaults to 0.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>*groups</code></strong></dt>
-<dd>Variable length list of groups to add this sprite to.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class BaseParticle(pygame.sprite.DirtySprite):
-    &#34;&#34;&#34;Base class for all other particles.
-
-    Subclasses must assign `image` and `rect` attributes for the sprites to render properly.
-
-    The following DirtySprite attributes may be overridden for specific behavior:
-        - dirty (int): 0 for not dirty, 1 for dirty, 2 for always dirty. Defaults to 1.
-        - blendmode (int): See the `special_flags` argument for `pygame.Surface.blit()`.
-            Defaults to 0.
-        - source_rect (pygame.Rect): Area of `self.image` to draw when rendering this sprite.
-            Defaults to None.
-        - visible (int): 0 for invisible, 1 for visible. Defaults to 1.
-        - layer (int): Which layer to draw this sprite on. Defaults to 0.
-
-    Args:
-        *groups: Variable length list of groups to add this sprite to.
-
-    &#34;&#34;&#34;
-
-    def __init__(self, *groups):
-        pygame.sprite.DirtySprite.__init__(self, groups)
-        self._locked = False
-
-    def update(self):
-        &#34;&#34;&#34;Method to control sprite behavior.
-
-        Default method does nothing. To implement specific behavior, it must be overridden
-        by subclasses. However, the `if self.dirty != 0` check included in the default
-        implementation is important to carry over to prevent particles from being updated
-        multiple times per frame (due to other particles interacting with this particle)
-        &#34;&#34;&#34;
-        if self.dirty != 0:
-            pass</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>pygame.sprite.DirtySprite</li>
-<li>pygame.sprite.Sprite</li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="PyParticles.particles.classes.BaseParticle.update"><code class="name flex">
-<span>def <span class="ident">update</span></span>(<span>self)</span>
-</code></dt>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="pyparticles.engine.utils" href="utils.html">pyparticles.engine.utils</a></code></dt>
 <dd>
-<div class="desc"><p>Method to control sprite behavior.</p>
-<p>Default method does nothing. To implement specific behavior, it must be overridden
-by subclasses. However, the <code>if self.dirty != 0</code> check included in the default
-implementation is important to carry over to prevent particles from being updated
-multiple times per frame (due to other particles interacting with this particle)</p></div>
+<div class="desc"></div>
 </dd>
 </dl>
-</dd>
-</dl>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
 </section>
 </article>
 <nav id="sidebar">
@@ -122,17 +53,13 @@ multiple times per frame (due to other particles interacting with this particle)
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="PyParticles.particles" href="index.html">PyParticles.particles</a></code></li>
+<li><code><a title="pyparticles" href="../index.html">pyparticles</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-classes">Classes</a></h3>
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
-<li>
-<h4><code><a title="PyParticles.particles.classes.BaseParticle" href="#PyParticles.particles.classes.BaseParticle">BaseParticle</a></code></h4>
-<ul class="">
-<li><code><a title="PyParticles.particles.classes.BaseParticle.update" href="#PyParticles.particles.classes.BaseParticle.update">update</a></code></li>
-</ul>
-</li>
+<li><code><a title="pyparticles.engine.sim" href="sim.html">pyparticles.engine.sim</a></code></li>
+<li><code><a title="pyparticles.engine.utils" href="utils.html">pyparticles.engine.utils</a></code></li>
 </ul>
 </li>
 </ul>

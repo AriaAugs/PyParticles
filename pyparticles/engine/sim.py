@@ -2,6 +2,22 @@ import pygame
 from pyparticles.engine import utils
 
 class ParticleSim():
+    """Self-contained particle simulation.
+
+    On each call to `update()`, all particles in this simulation will be updated, then they will
+    be drawn onto an image that spans the entire simulation. By encapsulating the simulation like
+    this, it should be easier to change where the simulation is drawn within the program window
+    and to apply pan/zoom to the final image displayed to the user.
+
+    Args:
+        sim_size (tuple): Grid size of the simulation.
+        cell_size (tuple): Pixel size of each grid cell.
+        bg_img (pygame.Surface): Background image for the simulation. Defaults to None.
+        bg_clr (pygame.Color): Background color for the simulation. Defaults to None.
+
+    Attributes:
+        image (pygame.Surface): The image corresponding to the current simulation state.
+    """
     def __init__(self, sim_size, cell_size, bg_img=None, bg_clr=None):
         # break the sim size into width and height, then make a 2D array of that size
         self._sim_width, self._sim_height = sim_size
@@ -14,7 +30,7 @@ class ParticleSim():
         sim_size = (self._sim_width*self._cell_width, self._sim_height*self._cell_width)
         self.image = pygame.Surface(sim_size)
         # create a sprite group for all the particles and a list to track newly added particles
-        self.particle_group = pygame.sprite.LayeredDirty()
+        self._particle_group = pygame.sprite.LayeredDirty()
         self._new_particles = []
         # set the background image that will be used when redrawing the sim
         bgd = None
@@ -27,7 +43,7 @@ class ParticleSim():
             print('Using default black background for sim')
             bgd = pygame.Surface(sim_size)
             bgd.fill('black')
-        self.particle_group.clear(self.image, bgd)
+        self._particle_group.clear(self.image, bgd)
 
     def _get_abs_pos(self, pos):
         """Get the absolute/pixel position that corresponds to a given grid position.
@@ -118,8 +134,8 @@ class ParticleSim():
             **kwargs (any): Variable length list of keyword arguments. These arguments will be
                 passed into each particle's `update()` function.
         """
-        self.particle_group.update(**kwargs, sim=self)
-        self.particle_group.draw(self.image)
+        self._particle_group.update(**kwargs, sim=self)
+        self._particle_group.draw(self.image)
         for p in self._new_particles:
             p.dirty = 0
         self._new_particles = []
@@ -139,7 +155,7 @@ class ParticleSim():
         x, y = pos
         if self._sim_grid[y][x] is not None:
             return False
-        self.particle_group.add(particle)
+        self._particle_group.add(particle)
         self._sim_grid[y][x] = particle
         particle.rect.topleft = self._get_abs_pos(pos)
         self._new_particles.append(particle)

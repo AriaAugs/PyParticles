@@ -13,24 +13,21 @@ class BaseParticle(pygame.sprite.DirtySprite):
     """Base class for all other particles.
 
     Subclasses must assign `image` and `rect` attributes for the sprites to render properly.
+    The inherited DirtySprite attributes may be overridden for specific behavior, but the
+    default parameters work perfectly fine for most use.
 
     This is designed to be the superclass of many other cooperative subclasses. All subclasses
     of this will call `super().__init__()` within their `__init__()` functions. Once the
     initialization chain reaches this class, typical single-inheritence behavior takes over.
 
-    The following DirtySprite attributes may be overridden for specific behavior:
-        - dirty (int): 0 for not dirty, 1 for dirty, 2 for always dirty. Defaults to 1.
-        - blendmode (int): See the `special_flags` argument for `pygame.Surface.blit()`.
-            Defaults to 0.
-        - source_rect (pygame.Rect): Area of `self.image` to draw when rendering this sprite.
-            Defaults to None.
-        - visible (int): 0 for invisible, 1 for visible. Defaults to 1.
-        - layer (int): Which layer to draw this sprite on. Defaults to 0.
-
     Args:
         **kwargs (any): Variable length list of keyword arguments. The following keyword arguments
-            are recognized:
-            - 'groups' (list): List of groups to add this sprite to. Defaults to None.
+            are recognized:\n
+            - groups (list): List of groups to add this sprite to. Defaults to None.
+
+    Attributes:
+        dirty (int): Indicates if this sprite is dirty. If so, it will be redrawn next frame.
+            0 means the sprite is clean, 1 means it is dirty, and 2 means it is always dirty.
     """
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
@@ -38,7 +35,7 @@ class BaseParticle(pygame.sprite.DirtySprite):
                 pygame.sprite.DirtySprite.__init__(self, *value)
                 return
         pygame.sprite.DirtySprite.__init__(self)
-        self.dirty = 1 # doesn't do anything besides getting PyLint to quiet down
+        self.dirty = 1 # doesn't do anything besides making PyLint quiet down
 
     def update(self, **kwargs):
         """Method to control sprite behavior.
@@ -47,6 +44,10 @@ class BaseParticle(pygame.sprite.DirtySprite):
         subclasses. These implementations should be prefaced by `if self.dirty != 0: pass` to
         prevent the particle from being updated multiple times per frame.
         """
+        # Okay, this function doesn't *technically* do nothing, but this is just a sanity check
+        # to handle any weird cases where this update function is called first in the MRO
+        if self.dirty == 0:
+            super().update(**kwargs)
 
 
 class GravityParticle(BaseParticle):
@@ -54,9 +55,12 @@ class GravityParticle(BaseParticle):
 
     Args:
         **kwargs: Variable length list of keyword arguments. The following keyword arguments are
-            recognized:
-            - 'gravity' (Vector2, Vector2 args): X,Y vector representing the force to be applied
+            recognized:\n
+            - gravity (Vector2, Vector2 args): X,Y vector representing the force to be applied
                 to the particle. Defaults to (0, 0).
+
+    Attributes:
+        gravity (pygame.Vector2): 2-D vector representing the gravity applied to this particle.
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

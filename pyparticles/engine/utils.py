@@ -18,7 +18,7 @@ def clamp(value, min_val, max_val):
         max_val (int, float): The maximum value to clamp to.
 
     Returns:
-        int, float: Returns the clamped value.
+        int, float: The clamped value.
     """
     if value < min_val:
         return min_val
