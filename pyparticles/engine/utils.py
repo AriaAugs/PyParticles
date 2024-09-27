@@ -1,6 +1,4 @@
-import pygame
-
-def vec_to_ints(vec:pygame.Vector2) -> tuple[int,int]:
+def vec_to_ints(vec):
     """Convert a pygame.Vector2 into a tuple of 2 integers.
 
     Args:

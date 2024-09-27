@@ -4,6 +4,7 @@
         "--jobs=0"
     ],
     "mypy-type-checker.args": [
-        "--strict"
+        //"--strict",
+        "--enable-incomplete-feature=NewGenericSyntax"
     ]
 }

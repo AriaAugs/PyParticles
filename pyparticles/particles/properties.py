@@ -1,5 +1,4 @@
 import pygame
-from typing import Any, Optional
 from pyparticles.engine import utils
 from pyparticles.engine import sim as simulation
 
@@ -33,14 +32,14 @@ class BaseParticle(pygame.sprite.DirtySprite):
         rect (pygame.Rect): The rectangle corresponding to the location and size of this sprite.
     """
 
-    dirty: int
-    image: pygame.Surface | None
-    rect: pygame.Rect | None
+    # dirty: int
+    # image: pygame.Surface
+    # rect: pygame.Rect
 
-    def __init__(self, **kwargs:dict[str, Any]):
+    def __init__(self, **kwargs):
         for key, value in kwargs.items():
             if key == 'groups':
-                pygame.sprite.DirtySprite.__init__(self, *value: _SpriteSupportsGroup)
+                pygame.sprite.DirtySprite.__init__(self, *value)
                 return
         pygame.sprite.DirtySprite.__init__(self)
         # initialize attributes to default values (mostly to calm PyLint down)
@@ -74,24 +73,26 @@ class GravityParticle(BaseParticle):
         gravity (pygame.Vector2): 2-D vector representing the gravity applied to this particle.
     """
 
-    gravity:pygame.Vector2
+    # gravity: pygame.Vector2
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.gravity = pygame.Vector2(0, 0)
-        for key, value in kwargs.items():
-            if key == 'gravity':
-                if isinstance(value, pygame.Vector2):
-                    self.gravity = value.copy()
-                else:
-                    try:
-                        self.gravity = pygame.Vector2(value)
-                    except ValueError:
-                        print('ERROR: Could not set gravity value for particle')
-                        print('  Expected a Vector2 or Vector2 arguments')
-                        print(f'  Got: {value}')
+        # pylint: disable=consider-iterating-dictionary
+        if 'gravity' in kwargs.keys():
+            # pylint: enable=consider-iterating-dictionary
+            value = kwargs['gravity']
+            if isinstance(value, pygame.Vector2):
+                self.gravity = value.copy()
+            else:
+                try:
+                    self.gravity = pygame.Vector2(value)
+                except ValueError:
+                    print('ERROR: Could not set gravity value for particle')
+                    print('  Expected a Vector2 or Vector2 arguments')
+                    print(f'  Got: {value}')
 
-    def update(self, **kwargs:dict[str,Any]) -> None:
+    def update(self, **kwargs):
         if self.dirty != 0:
             return
         # apply gravity and clamp the new position

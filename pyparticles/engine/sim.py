@@ -19,7 +19,7 @@ class ParticleSim():
         image (pygame.Surface): The image corresponding to the current simulation state.
     """
 
-    image:pygame.Surface
+    # image: pygame.Surface
 
     def __init__(self, sim_size, cell_size, bg_img=None, bg_clr=None):
         # break the sim size into width and height, then make a 2D array of that size
