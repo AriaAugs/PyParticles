@@ -1,7 +1,8 @@
 import pygame
-from pyparticles.particles import properties
+from pyparticles.objects import properties
 
 class TestParticle(
+    #properties.HeapableParticle,
     properties.GravityParticle,
     properties.BaseParticle):
     """Test particle
@@ -10,7 +11,9 @@ class TestParticle(
     """
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs, gravity=(0,1))
+        norm = [(1,1),(-1,1)]
+        test = [(1,0),(-1,0)]
+        super().__init__(**kwargs, gravity_v=(0,1), heap_v=norm, heap_p=0.9)
         self.image = pygame.Surface((10, 10))
         self.image.fill('brown')
         self.rect = self.image.get_rect()

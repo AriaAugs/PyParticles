@@ -1,4 +1,4 @@
-from pyparticles.particles import types
+from pyparticles.objects import particles
 from pyparticles.engine import sim as simulation
 import pygame
 
@@ -17,20 +17,17 @@ import pygame
 if __name__ == '__main__':
     pygame.init()
     sim = simulation.ParticleSim((50, 50), (12, 12), bg_clr='pink')
-    sim.add_particle(types.TestParticle(), (0, 0))
-    sim.add_particle(types.TestParticle(), (7, 9))
-    sim.add_particle(types.TestParticle(), (15, 5))
-    sim.add_particle(types.TestParticle(), (28, 2))
-    sim.add_particle(types.TestParticle(), (7, 3))
 
     screen = pygame.display.set_mode((600, 600))
     clock = pygame.time.Clock()
 
+    print(particles.TestParticle.__mro__)
+
     running = True
-    tick = 0
+    tick = 0.0
     fps = 60
-    tickrate = 0.33 # percent of frames to update sim on
-    tickrate = int(1 / tickrate)
+    tickrate = 0.80 # percent of frames to update sim on
+    tickrate = 1 / tickrate
     adding = False
 
     while running:
@@ -43,9 +40,11 @@ if __name__ == '__main__':
                 adding = False
         if adding:
             pos = sim.get_pos(pygame.mouse.get_pos())
-            sim.add_particle(types.TestParticle(), pos)
-        tick = (tick + 1) % tickrate
-        if tick == 0:
+            sim.add_particle(particles.TestParticle(), pos)
+        tick += 1
+        if tick >= tickrate:
+            tick -= tickrate
+        if tick < 1:
             sim.update()
         screen.blit(sim.image, (0, 0))
         pygame.display.flip()
