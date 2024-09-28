@@ -12,7 +12,7 @@ class TestParticle(
 
     def __init__(self, **kwargs):
         norm = [(1,1),(-1,1)]
-        test = [(1,0),(-1,0)]
+        #test = [(1,0),(-1,0)]
         super().__init__(**kwargs, gravity_v=(0,1), heap_v=norm, heap_p=0.9)
         self.image = pygame.Surface((10, 10))
         self.image.fill('brown')

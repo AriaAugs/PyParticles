@@ -1,18 +1,13 @@
-from pyparticles.objects import particles
-from pyparticles.engine import sim as simulation
 import pygame
+from pyparticles.objects import particles
+from pyparticles.engine import simulation
 
 ### FAR FUTURE PROJECTS ###
 # TODO: Update code to use type hints
 #       Attribute type hints will be placed between class docstring and __init__()
 # TODO: Update docstrings once typehints have been added
 ### NEAR FUTURE PROJECTS ###
-# TODO: Clean up import order
 # TODO: Add module-level docstrings
-# TODO: Re-organize files
-#       Rename 'sim.py' to 'simulation.py'
-#       Rename 'particles' package to 'objects'
-#       Rename 'types.py' to 'particles.py'
 
 if __name__ == '__main__':
     pygame.init()
@@ -26,7 +21,7 @@ if __name__ == '__main__':
     running = True
     tick = 0.0
     fps = 60
-    tickrate = 0.80 # percent of frames to update sim on
+    tickrate = 1.0 # percent of frames to update sim on
     tickrate = 1 / tickrate
     adding = False
 

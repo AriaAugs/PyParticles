@@ -1,5 +1,5 @@
-import pygame
 from random import random
+import pygame
 from pyparticles.engine. utils import Point, rand_iter
 
 # TODO: add chained physics resolution, meaning particles will call `update()` on other
