@@ -101,3 +101,7 @@ class Point():
         clamped_point = self.clamp(min_point, max_point, exclude_min, exclude_max)
         self.x = clamped_point.x
         self.y = clamped_point.y
+
+    def normalize(self):
+        # TODO: implement a probabilistic version of this
+        return Point(self.x // abs(self.x), self.y // abs(self.y))

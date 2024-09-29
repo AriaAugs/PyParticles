@@ -55,18 +55,14 @@ class BaseParticle(pygame.sprite.DirtySprite):
         subclasses. These implementations should be prefaced by `if self.dirty != 0: pass` to
         prevent the particle from being updated multiple times per frame.
         """
-        # Okay, this function doesn't *technically* do nothing, but this is just a sanity check
-        # to handle any weird cases where this update function is called first in the MRO
-        if self.dirty == 0:
-            super().update(**kwargs)
-
-    def move(self, sim, offset, condition=None):
-        pass
 
 class GravityArgs():
     def __init__(self, vec=(0,0), prob=1.0):
-        self.vec = vec
+        self.vec = Point(vec)
         self.prob = prob
+
+    def copy(self):
+        return GravityArgs(vec=self.vec, prob=self.prob)
 
 class GravityParticle(BaseParticle):
     """Particle with gravity (or any other kind of constant linear force)
@@ -74,53 +70,38 @@ class GravityParticle(BaseParticle):
     Args:
         **kwargs: Variable length list of keyword arguments. The following keyword arguments are
             recognized:\n
-            - gravity_v (Vector2, Vector2 args): X,Y vector representing the force to be applied
+            - gravity (GravityArgs): GravityArgs object representing the direction and probability
+                of this particle's gravity.
+            - gravity_vec (Point, Point-like): X,Y vector representing the force to be applied
                 to the particle. Defaults to (0, 0).
-            - gravity_p (float): Probablity (from 0.0 to 1.0) that the particle will update due to
+            - gravity_prob (float): Probablity (from 0.0 to 1.0) that the particle will update due to
                 this property. Defaults to 1.0.
 
     Attributes:
-        gravity_v (pygame.Vector2): 2-D vector representing the gravity applied to this particle.
-        gravity_p (float): Probability that the particle will update due to this property.
+        gravity (GravityArgs): The gravity vector and probability of the particle.
     """
-
-    # gravity: pygame.Vector2
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.gravity_v = pygame.Vector2(0, 0)
-        self.gravity_p = 1.0
+        self.gravity = GravityArgs()
         for key, value in kwargs.items():
-            if key == 'gravity_v':
-                self._set_gravity_v(value)
-            if key == 'gravity_p':
-                self.gravity_p = value
-
-    def _set_gravity_v(self, value):
-        if isinstance(value, pygame.Vector2):
-            self.gravity_v = value.copy()
-        else:
-            try:
-                self.gravity_v = pygame.Vector2(value)
-            except ValueError:
-                print('ERROR: Could not set gravity value for particle')
-                print('  Expected a Vector2 or Vector2 arguments')
-                print(f'  Got: {value}')
+            if key == 'gravity':
+                self.gravity = value.copy()
+            if key == 'gravity_vec':
+                self.gravity.vec = Point(value)
+            if key == 'gravity_prob':
+                self.gravity.prob = value
 
     def update(self, **kwargs):
-        if self.dirty != 0:
-            return
-        if random() > self.gravity_p:
-            super().update(**kwargs)
+        if self.dirty != 0 or random() > self.gravity.prob:
             return
         sim = kwargs['sim']
         # apply gravity and clamp the new position
         pos = sim.get_pos(self.rect.topleft)
-        new_pos = Point(pos + self.gravity_v)
+        new_pos = pos + self.gravity.vec
         new_pos = sim.clamp_pos(new_pos)
-        # if we can't move because we're at the edge, do nothing and call super().update()
+        # we can't move because we're at the edge of the sim
         if pos == new_pos:
-            super().update(**kwargs)
             return
         # try to move to the new position
         # TODO: chained physics resolution
@@ -128,6 +109,22 @@ class GravityParticle(BaseParticle):
         if dest is None:
             sim.move_particle(self, new_pos)
             self.dirty = 1
+
+class HeapArgs():
+    def __init__(self, vec=None, prob=1.0, limit=None, stuck=False):
+        self.vec = []
+        if vec is not None:
+            for p in vec:
+                self.vec.append(Point(p))
+        self.prob = prob
+        self.limit = []
+        if limit is not None:
+            for p in limit:
+                self.vec.append(Point(p))
+        self.stuck = stuck
+
+    def copy(self):
+        return HeapArgs(vec=self.vec, prob=self.prob, limit=self.limit, stuck=self.stuck)
 
 class HeapableParticle(BaseParticle):
     """Particle that can form heaps/piles.
@@ -139,73 +136,69 @@ class HeapableParticle(BaseParticle):
     Args:
         **kwargs: Variable length list of keyword arguments. The following keyword arguments are
             recognized:\n
-            - heap_v (list[Vector2], list[Vector2 args]): List of x,y vectors representing the
+            - heap_vec (list[Point], list[Point-like]): List of x,y vectors representing the
                 directions this particle can move to form heaps. Defaults to [].
-            - heap_p (float): Probablity (from 0.0 to 1.0) that the particle will update due to
+            - heap_prob (float): Probablity (from 0.0 to 1.0) that the particle will update due to
                 this property. This can be thought of as the particle's 'friction'.
                 Defaults to 1.0.
+            - heap_limit (list[Point], list[Point-like]): List of x,y vectors that will force this
+                particle to fall if any of them are empty. Defaults to [].
+            - heap_stuck (bool): Whether or not
 
     Attributes:
-        heap_v (pygame.Vector2): 2-D vector representing the gravity applied to this particle.
-        heap_p (float): Probability that the particle will update due to this property.
+        TODO
     """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.heap_v = []
-        self.heap_p = 1.0
-        self.heap_g = [pygame.Vector2]
+        self.heap = HeapArgs()
         for key, value in kwargs.items():
-            if key == 'heap_v':
-                self._set_heap_v(value)
-            if key == 'heap_p':
-                self.heap_p = value
-        self.moved = False
+            if key == 'heap':
+                self.heap = value.copy()
+            if key == 'heap_vec':
+                for p in value:
+                    self.heap.vec.append(Point(p))
+            if key == 'heap_prob':
+                self.heap.prob = value
+            if key == 'heap_limit':
+                for p in value:
+                    self.heap.limit.append(Point(p))
+            if key == 'heap_stuck':
+                self.heap.stuck = value
 
-    def _set_heap_v(self, value):
-        for vec in value:
-            if isinstance(vec, pygame.Vector2):
-                self.heap_v.append(vec.copy())
-            else:
-                try:
-                    self.heap_v.append(pygame.Vector2(vec))
-                except ValueError:
-                    print('ERROR: Could not set heap value for particle')
-                    print('  Expected a Vector2 or Vector2 arguments')
-                    print(f'  Got: {vec}')
+    def _move(self, sim, dest_pos):
+        sim.move_particle(self, dest_pos)
+        self.heap.stuck = False
+        self.dirty = 1
 
     def update(self, **kwargs):
         if self.dirty != 0:
-            print('Already been updated')
-            return
-        if self.prev_dirty == 0 or random() > self.heap_p:
-            if self.moved:
-                print(f'Not moving - prev_dirty = {self.prev_dirty}')
-                self.moved = False
-            #print(f'Dirty: {self.dirty}')
-            super().update(**kwargs)
             return
         sim = kwargs['sim']
-        # check that we're on top of another particle, according to this particle's gravity
+        # check if this particle is on top of another particle
         pos = sim.get_pos(self.rect.topleft)
-        new_pos = Point(pos + self.gravity_v)
-        new_pos = sim.clamp_pos(new_pos)
-        dest = sim.get_cell(new_pos)
-        if dest is None or dest is self:
-            print(f'Dest is None: {dest is None}')
-            super().update(**kwargs)
+        dest_cell = sim.get_cell(pos + self.gravity.vec)
+        if dest_cell is None or dest_cell is self:
+            return
+        # check if this particle is at its heap limit
+        for v in self.heap.limit:
+            if sim.get_cell(pos + v) is None:
+                vec = v.normalize()
+                if sim.get_cell(pos + vec) is None:
+                    self._move(sim, pos + vec)
+                    return
+        # check if the particle is stuck in place
+        if self.heap.stuck:
             return
         # try to form a heap
-        # TODO: chained physics resolution
-        for heap_dir in rand_iter(self.heap_v):
+        for heap_dir in rand_iter(self.heap.vec):
             new_pos = Point(pos + heap_dir)
             new_pos = sim.clamp_pos(new_pos)
             dest = sim.get_cell(new_pos)
-            print(f'{new_pos} is {dest}')
-            # move to an empty spot
+            # move to an empty spot or get stuck
             if dest is None:
-                print('Moving to new {new_pos}')
-                self.moved = True
-                sim.move_particle(self, new_pos)
-                self.dirty = 1
+                if random() > self.heap.prob:
+                    self.heap.stuck = True
+                    return
+                self._move(sim, new_pos)
                 return

@@ -88,7 +88,7 @@ class ParticleSim():
         return pos.clamp((0,0), self._sim_size)
 
     def get_cell(self, pos):
-        """Return the item held at a given grid position.
+        """Return the item held at a given grid position. Clamps the grid position if needed.
 
         Args:
             pos (Point, Point-like): The grid position to retrieve the value of.
@@ -99,6 +99,8 @@ class ParticleSim():
         """
         if not isinstance(pos, Point):
             pos = Point(pos)
+        if not self.in_bounds(pos):
+            pos = self.clamp_pos(pos)
         return self._sim_grid[pos.y][pos.x]
 
     def move_particle(self, particle, pos):
