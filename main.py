@@ -21,7 +21,7 @@ if __name__ == '__main__':
     running = True
     tick = 0.0
     fps = 60
-    tickrate = 1.0 # percent of frames to update sim on
+    tickrate = 0.4 # percent of frames to update sim on
     tickrate = 1 / tickrate
     adding = False
 
@@ -37,9 +37,8 @@ if __name__ == '__main__':
             pos = sim.get_pos(pygame.mouse.get_pos())
             sim.add_particle(particles.TestParticle(), pos)
         tick += 1
-        if tick >= tickrate:
+        while tick >= tickrate:
             tick -= tickrate
-        if tick < 1:
             sim.update()
         screen.blit(sim.image, (0, 0))
         pygame.display.flip()
