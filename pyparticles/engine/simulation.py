@@ -14,6 +14,7 @@ class ParticleSim():
         cell_size (tuple): Pixel size of each grid cell.
         bg_img (pygame.Surface): Background image for the simulation. Defaults to None.
         bg_clr (pygame.Color): Background color for the simulation. Defaults to None.
+        chunk_size (int): Size of smallest map chunks to use for optimization. Defaults to 8.
 
     Attributes:
         image (pygame.Surface): The image corresponding to the current simulation state.
@@ -21,7 +22,7 @@ class ParticleSim():
 
     # image: pygame.Surface
 
-    def __init__(self, sim_size, cell_size, bg_img=None, bg_clr=None):
+    def __init__(self, sim_size, cell_size, bg_img=None, bg_clr=None, chunk_size=4):
         # break the sim size into width and height, then make a 2D array of that size
         self._sim_size = Point(sim_size)
         self._sim_grid = [
@@ -47,6 +48,18 @@ class ParticleSim():
             bgd = pygame.Surface(img_size)
             bgd.fill('black')
         self._particle_group.clear(self.image, bgd)
+        # chunk map for optimization
+        self._chunk_size = chunk_size
+        #self._chunk_map = []
+        #while chunk_size < max(self._sim_size.x, self._sim_size.y):
+        #    layer_map = [
+        #        [False for x in range(0, self._sim_size.x, chunk_size)]
+        #        for y in range(0, self._sim_size.y, chunk_size)]
+        #    self._chunk_map.append(layer_map)
+        #    chunk_size *= 2
+        self._chunk_map = [
+            [False for x in range(0, self._sim_size.x, chunk_size)]
+            for y in range(0, self._sim_size.y, chunk_size)]
 
     def _get_abs_pos(self, pos):
         """Get the absolute/pixel position that corresponds to a given grid position.
@@ -143,9 +156,46 @@ class ParticleSim():
             **kwargs (any): Variable length list of keyword arguments. These arguments will be
                 passed into each particle's `update()` function.
         """
-        self._particle_group.update(**kwargs, sim=self)
-        for p in self._particle_group:
-            p.prev_dirty = p.dirty
+        # create the group of sprites to update
+        update_group = pygame.sprite.LayeredDirty()
+        for y in range(self._sim_size.y):
+            for x in range(self._sim_size.x):
+                if self._sim_grid[y][x] is not None and self._chunk_map[y//self._chunk_size][x//self._chunk_size]:
+                    #print(f'Updating particle in chunk {x//self._chunk_size},{y//self._chunk_size}')
+                    update_group.add(self._sim_grid[y][x])
+        # reset the chunk map
+        for y in range((self._sim_size.y // self._chunk_size) + 1):
+            for x in range((self._sim_size.x // self._chunk_size) + 1):
+                #s = '_'
+                #if self._chunk_map[y][x]:
+                #    s = '#'
+                #print(f'{s} ', end='')
+                self._chunk_map[y][x] = False
+            #print('')
+        # internal implementation of `pygame.sprite.Group.add()` sets the sprite's dirty bit
+        # however, we don't want this, so reest the dirty bits of the sprites in update_group
+        for p in update_group:
+            p.dirty = 0
+        #if len(self._particle_group) > 0:
+        #    print(f'Updating {(100 * len(update_group)) // len(self._particle_group)}% of all particles ({len(update_group)} / {len(self._particle_group)})')
+        update_group.update(**kwargs, sim=self)
+        # update the chunk map
+        for y in range(self._sim_size.y):
+            for x in range(self._sim_size.x):
+                p = self._sim_grid[y][x]
+                if p is None:
+                    continue
+                if p.updateable or p.dirty != 0:
+                    c_x = (x // self._chunk_size) - 1
+                    c_y = (y // self._chunk_size) - 1
+                    for a in range(3):
+                        if c_x + a < 0 or c_x + a > self._sim_size.x // self._chunk_size:
+                            continue
+                        for b in range(3):
+                            if c_y + b < 0 or c_y + b > self._sim_size.y // self._chunk_size:
+                                continue
+                            self._chunk_map[c_y+b][c_x+a] = True
+        #self._particle_group.update(**kwargs, sim=self)
         self._particle_group.draw(self.image)
         for p in self._new_particles:
             p.dirty = 0

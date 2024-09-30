@@ -28,9 +28,10 @@ class BaseParticle(pygame.sprite.DirtySprite):
     Attributes:
         dirty (int): Indicates if this sprite is dirty. If so, it will be redrawn next frame.
             0 means the sprite is clean, 1 means it is dirty, and 2 means it is always dirty.
-        prev_dirty (int): The dirty value of this sprite last frame.
         image (pygame.Surface): The image for this sprite.
         rect (pygame.Rect): The rectangle corresponding to the location and size of this sprite.
+        updateable (bool): Whether or not this particle can update itself, assuming all
+            probabilistic behavior triggers.
     """
 
     # dirty: int
@@ -47,6 +48,7 @@ class BaseParticle(pygame.sprite.DirtySprite):
         self.dirty = 1
         self.image = None
         self.rect = None
+        self.updateable = True
 
     def update(self, **kwargs):
         """Method to control sprite behavior.
@@ -93,22 +95,27 @@ class GravityParticle(BaseParticle):
                 self.gravity.prob = value
 
     def update(self, **kwargs):
-        if self.dirty != 0 or random() > self.gravity.prob:
-            return
+        if self.dirty != 0:
+            return True
+        do_update = True
+        if random() > self.gravity.prob:
+            do_update = False
         sim = kwargs['sim']
         # apply gravity and clamp the new position
         pos = sim.get_pos(self.rect.topleft)
-        new_pos = pos + self.gravity.vec
-        new_pos = sim.clamp_pos(new_pos)
+        dest_pos = sim.clamp_pos(pos + self.gravity.vec)
         # we can't move because we're at the edge of the sim
-        if pos == new_pos:
-            return
+        if pos == dest_pos:
+            return False
         # try to move to the new position
         # TODO: chained physics resolution
-        dest = sim.get_cell(new_pos)
+        dest = sim.get_cell(dest_pos)
         if dest is None:
-            sim.move_particle(self, new_pos)
-            self.dirty = 1
+            if do_update:
+                sim.move_particle(self, dest_pos)
+                self.dirty = 1
+            return True
+        return False
 
 class HeapArgs():
     def __init__(self, vec=None, prob=1.0, limit=None, stuck=False):
@@ -173,23 +180,23 @@ class HeapableParticle(BaseParticle):
 
     def update(self, **kwargs):
         if self.dirty != 0:
-            return
+            return True
         sim = kwargs['sim']
         # check if this particle is on top of another particle
         pos = sim.get_pos(self.rect.topleft)
         dest_cell = sim.get_cell(pos + self.gravity.vec)
         if dest_cell is None or dest_cell is self:
-            return
+            return False
         # check if this particle is at its heap limit
         for v in self.heap.limit:
             if sim.get_cell(pos + v) is None:
                 vec = v.normalize()
                 if sim.get_cell(pos + vec) is None:
                     self._move(sim, pos + vec)
-                    return
+                    return True
         # check if the particle is stuck in place
         if self.heap.stuck:
-            return
+            return False
         # try to form a heap
         for heap_dir in rand_iter(self.heap.vec):
             new_pos = Point(pos + heap_dir)
@@ -199,6 +206,7 @@ class HeapableParticle(BaseParticle):
             if dest is None:
                 if random() > self.heap.prob:
                     self.heap.stuck = True
-                    return
+                    return False
                 self._move(sim, new_pos)
-                return
+                return True
+        return False
