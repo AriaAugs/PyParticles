@@ -40,8 +40,6 @@ def paint(sim, adding):
         for y in range(-1*brush_size, brush_size+1, 1):
             off = Point(x, y)
             if not sim.in_bounds(pos + off):
-                f = pos + off
-                print(f'{f.x},{f.y} not in boundss')
                 continue
             if sqrt(x**2 + y**2) > brush_size:
                 continue

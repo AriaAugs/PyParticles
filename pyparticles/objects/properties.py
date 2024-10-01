@@ -50,6 +50,7 @@ class BaseParticle(pygame.sprite.DirtySprite):
         self.dirty = 1
         self.image = None
         self.rect = None
+        self.source_rect = None
         self.updateable = True
         self._dependants = []
         self.active = True
