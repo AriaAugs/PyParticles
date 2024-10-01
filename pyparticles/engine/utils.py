@@ -69,11 +69,11 @@ class Point():
 
     def __le__(self, other):
         other = Point(other)
-        return self < other or self == other
+        return self.x <= other.x and self.y <= other.y
 
     def __ge__(self, other):
         other = Point(other)
-        return self > other or self == other
+        return self.x >= other.x and self.y >= other.y
 
     def __iter__(self):
         yield self.x
@@ -102,6 +102,6 @@ class Point():
         self.x = clamped_point.x
         self.y = clamped_point.y
 
-    def normalize(self):
+    def get_normalized(self):
         # TODO: implement a probabilistic version of this
         return Point(self.x // abs(self.x), self.y // abs(self.y))

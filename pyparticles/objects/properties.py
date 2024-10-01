@@ -32,6 +32,8 @@ class BaseParticle(pygame.sprite.DirtySprite):
         rect (pygame.Rect): The rectangle corresponding to the location and size of this sprite.
         updateable (bool): Whether or not this particle can update itself, assuming all
             probabilistic behavior triggers.
+        dependants (list[BaseParticle]): Particles that can interact with this particle when active
+        active (bool): active state of particle
     """
 
     # dirty: int
@@ -49,6 +51,24 @@ class BaseParticle(pygame.sprite.DirtySprite):
         self.image = None
         self.rect = None
         self.updateable = True
+        self._dependants = []
+        self.active = True
+        self._depends_on = []
+        self._updateable = True
+
+    def add_dependant(self, particle):
+        self._dependants.append(particle)
+
+    def activate(self):
+        self.active = True
+        while len(self._dependants) > 0:
+            self._dependants.pop().active = True
+            # TODO: once we have chained physics resolution, call activate() on dependant cells
+            #self._dependants.pop().activate()
+        # TODO: some way to call update() to update particles on same frame they were activated on?
+
+    def pre_update(self):
+        self._updateable = False
 
     def update(self, **kwargs):
         """Method to control sprite behavior.
@@ -57,6 +77,17 @@ class BaseParticle(pygame.sprite.DirtySprite):
         subclasses. These implementations should be prefaced by `if self.dirty != 0: pass` to
         prevent the particle from being updated multiple times per frame.
         """
+        if self.dirty != 0 or self._updateable:
+            # TODO: make sure we wanna call `self.activate()`` here
+            self.activate()
+            return
+        sim = kwargs['sim']
+        pos = sim.get_pos(self.rect.topleft)
+        for d in self._depends_on:
+            p = sim.get_cell(pos + d)
+            if p is not None:
+                p.add_dependant(self)
+        self.active = False
 
 class GravityArgs():
     def __init__(self, vec=(0,0), prob=1.0):
@@ -93,45 +124,46 @@ class GravityParticle(BaseParticle):
                 self.gravity.vec = Point(value)
             if key == 'gravity_prob':
                 self.gravity.prob = value
+        self._depends_on.append(self.gravity.vec)
 
     def update(self, **kwargs):
         if self.dirty != 0:
-            return True
-        do_update = True
-        if random() > self.gravity.prob:
-            do_update = False
+            return
         sim = kwargs['sim']
         # apply gravity and clamp the new position
-        pos = sim.get_pos(self.rect.topleft)
-        dest_pos = sim.clamp_pos(pos + self.gravity.vec)
+        dest_pos = sim.get_pos(self.rect.topleft) + self.gravity.vec
         # we can't move because we're at the edge of the sim
-        if pos == dest_pos:
-            return False
+        if not sim.in_bounds(dest_pos):
+            return
         # try to move to the new position
         # TODO: chained physics resolution
-        dest = sim.get_cell(dest_pos)
-        if dest is None:
-            if do_update:
+        dest_cell = sim.get_cell(dest_pos)
+        if dest_cell is None: # particle can move
+            if random() < self.gravity.prob:
                 sim.move_particle(self, dest_pos)
                 self.dirty = 1
-            return True
-        return False
+            else: # particle failed random check, but could've moved
+                self._updateable = True
+            return
+        # particle is blocked - cehck if blocking particle is active
+        if dest_cell.active:
+            self._updateable = True
 
 class HeapArgs():
-    def __init__(self, vec=None, prob=1.0, limit=None, stuck=False):
-        self.vec = []
-        if vec is not None:
-            for p in vec:
-                self.vec.append(Point(p))
+    def __init__(self, vecs=None, prob=1.0, limits=None, stuck=False):
+        self.vecs = []
+        if vecs is not None:
+            for v in vecs:
+                self.vecs.append(Point(v))
         self.prob = prob
-        self.limit = []
-        if limit is not None:
-            for p in limit:
-                self.vec.append(Point(p))
+        self.limits = []
+        if limits is not None:
+            for v in limits:
+                self.limits.append(Point(v))
         self.stuck = stuck
 
     def copy(self):
-        return HeapArgs(vec=self.vec, prob=self.prob, limit=self.limit, stuck=self.stuck)
+        return HeapArgs(vecs=self.vecs, prob=self.prob, limits=self.limits, stuck=self.stuck)
 
 class HeapableParticle(BaseParticle):
     """Particle that can form heaps/piles.
@@ -164,14 +196,18 @@ class HeapableParticle(BaseParticle):
                 self.heap = value.copy()
             if key == 'heap_vec':
                 for p in value:
-                    self.heap.vec.append(Point(p))
+                    self.heap.vecs.append(Point(p))
             if key == 'heap_prob':
                 self.heap.prob = value
             if key == 'heap_limit':
                 for p in value:
-                    self.heap.limit.append(Point(p))
+                    self.heap.limits.append(Point(p))
             if key == 'heap_stuck':
                 self.heap.stuck = value
+        if self.heap.vecs is not None and self.heap.prob >= 1.0:
+            self._depends_on.extend(self.heap.vecs)
+        if self.heap.limits is not None:
+            self._depends_on.extend(self.heap.limits)
 
     def _move(self, sim, dest_pos):
         sim.move_particle(self, dest_pos)
@@ -180,33 +216,43 @@ class HeapableParticle(BaseParticle):
 
     def update(self, **kwargs):
         if self.dirty != 0:
-            return True
+            return
         sim = kwargs['sim']
+        limit_triggered = False
         # check if this particle is on top of another particle
         pos = sim.get_pos(self.rect.topleft)
-        dest_cell = sim.get_cell(pos + self.gravity.vec)
-        if dest_cell is None or dest_cell is self:
-            return False
+        dest_pos = pos + self.gravity.vec
+        if sim.in_bounds(dest_pos) and sim.get_cell(dest_pos) is None:
+            return
         # check if this particle is at its heap limit
-        for v in self.heap.limit:
-            if sim.get_cell(pos + v) is None:
-                vec = v.normalize()
-                if sim.get_cell(pos + vec) is None:
-                    self._move(sim, pos + vec)
-                    return True
+        for lim_vec in rand_iter(self.heap.limits):
+            dest_pos = pos + lim_vec
+            if not sim.in_bounds(dest_pos):
+                continue
+            if sim.get_cell(dest_pos) is None:
+                dest_pos = pos + lim_vec.get_normalized()
+                if not sim.in_bounds(dest_pos):
+                    continue
+                dest_cell = sim.get_cell(dest_pos)
+                if dest_cell is None:
+                    self._move(sim, dest_pos)
+                    return
+                limit_triggered = True
+                self._updateable |= dest_cell.active
         # check if the particle is stuck in place
-        if self.heap.stuck:
-            return False
+        if self.heap.stuck or limit_triggered:
+            return
         # try to form a heap
-        for heap_dir in rand_iter(self.heap.vec):
-            new_pos = Point(pos + heap_dir)
-            new_pos = sim.clamp_pos(new_pos)
-            dest = sim.get_cell(new_pos)
-            # move to an empty spot or get stuck
-            if dest is None:
-                if random() > self.heap.prob:
+        for heap_vec in rand_iter(self.heap.vecs):
+            dest_pos = pos + heap_vec
+            if not sim.in_bounds(dest_pos):
+                continue
+            dest_cell = sim.get_cell(dest_pos)
+            if dest_cell is None:
+                if random() >= self.heap.prob:
                     self.heap.stuck = True
-                    return False
-                self._move(sim, new_pos)
-                return True
-        return False
+                    return
+                self._move(sim, dest_pos)
+                return
+            if self.heap.prob >= 1.0:
+                self._updateable |= dest_cell.active
