@@ -8,7 +8,6 @@
             "command": "${command:python.interpreterPath}",
             "group": {
                 "kind": "build",
-            //    "isDefault": true
             },
             "args": [
                 "-m", "main"
@@ -27,11 +26,10 @@
             "command": "${command:python.interpreterPath}",
             "group": {
                 "kind": "build",
-            //    "isDefault": true
             },
             "args": [
                 "-m", "pdoc",
-                "--force",
+                "--force", // shouldn't be needed, but leaving it in anyways
                 "--html",
                 "-o", "./docs/",
                 "./pyparticles/"
@@ -50,7 +48,6 @@
             "command": "rm",
             "group": {
                 "kind": "build",
-            //    "isDefault": true
             },
             "args": [
                 "-rf", "./docs/"
