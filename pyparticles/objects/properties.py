@@ -9,16 +9,16 @@ from pyparticles.engine. utils import Point, rand_iter
 # have been called in the resolution chain to prevent infinite loops and repeat work,
 # but this tracking value must also be reset after each chain resolves
 
-class BaseParticle(pygame.sprite.DirtySprite):
+class BaseParticle(pygame.sprite.Sprite):
     """Base class for all other particles.
 
     Subclasses must assign `image` and `rect` attributes for the sprites to render properly.
-    The inherited DirtySprite attributes may be overridden for specific behavior, but the
-    default parameters work perfectly fine for most use.
 
-    This is designed to be the superclass of many other cooperative subclasses. All subclasses
-    of this will call `super().__init__()` within their `__init__()` functions. Once the
-    initialization chain reaches this class, typical single-inheritence behavior takes over.
+    This is designed to work in a hybrid inheritence approach. The `__init__()` methods will
+    work cooperatively, each calling `super().__init__()` to ensure a given particle initializes
+    all its properties. The `update()` methods, however, will work in a more separate fashion,
+    where none of the `update()` methods call `super().update()`. This allows a given particle
+    type to control the order in which it executes specific behavior.
 
     Args:
         **kwargs (any): Variable length list of keyword arguments. The following keyword arguments
@@ -26,10 +26,9 @@ class BaseParticle(pygame.sprite.DirtySprite):
             - groups (list): List of groups to add this sprite to. Defaults to None.
 
     Attributes:
-        dirty (int): Indicates if this sprite is dirty. If so, it will be redrawn next frame.
-            0 means the sprite is clean, 1 means it is dirty, and 2 means it is always dirty.
         image (pygame.Surface): The image for this sprite.
         rect (pygame.Rect): The rectangle corresponding to the location and size of this sprite.
+        updated (bool): Dirty bit for the sprite. If True, the sprite has been updated this frame.
         updateable (bool): Whether or not this particle can update itself, assuming all
             probabilistic behavior triggers.
         dependants (list[BaseParticle]): Particles that can interact with this particle when active
@@ -43,19 +42,21 @@ class BaseParticle(pygame.sprite.DirtySprite):
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             if key == 'groups':
-                pygame.sprite.DirtySprite.__init__(self, *value)
+                pygame.sprite.Sprite.__init__(self, *value)
                 return
-        pygame.sprite.DirtySprite.__init__(self)
-        # initialize attributes to default values (mostly to calm PyLint down)
-        self.dirty = 1
+        pygame.sprite.Sprite.__init__(self)
+        # initialize attributes to default values
         self.image = None
         self.rect = None
-        self.source_rect = None
-        self.updateable = True
+        self.updated = True
+        self._updateable = True
         self._dependants = []
         self.active = True
+        # Vector list of particles this depends on to be activated. Values are set by the init
+        # functions of subclasses, and this list remains unchanged afterwards. If this particle
+        # fails to update and all the particles it depends on are deactivated, then this particle
+        # will deactivate.
         self._depends_on = []
-        self._updateable = True
 
     def add_dependant(self, particle):
         self._dependants.append(particle)
@@ -63,12 +64,11 @@ class BaseParticle(pygame.sprite.DirtySprite):
     def activate(self):
         self.active = True
         while len(self._dependants) > 0:
-            self._dependants.pop().active = True
-            # TODO: once we have chained physics resolution, call activate() on dependant cells
-            #self._dependants.pop().activate()
+            self._dependants.pop().activate()
         # TODO: some way to call update() to update particles on same frame they were activated on?
 
     def pre_update(self):
+        self.updated = False
         self._updateable = False
 
     def update(self, **kwargs):
@@ -78,9 +78,9 @@ class BaseParticle(pygame.sprite.DirtySprite):
         subclasses. These implementations should be prefaced by `if self.dirty != 0: pass` to
         prevent the particle from being updated multiple times per frame.
         """
-        if self.dirty != 0 or self._updateable:
-            # TODO: make sure we wanna call `self.activate()`` here
-            self.activate()
+        if self.updated or self._updateable:
+            while len(self._dependants) > 0:
+                self._dependants.pop().activate()
             return
         sim = kwargs['sim']
         pos = sim.get_pos(self.rect.topleft)
@@ -128,7 +128,7 @@ class GravityParticle(BaseParticle):
         self._depends_on.append(self.gravity.vec)
 
     def update(self, **kwargs):
-        if self.dirty != 0:
+        if self.updated:
             return
         sim = kwargs['sim']
         # apply gravity and clamp the new position
@@ -142,7 +142,7 @@ class GravityParticle(BaseParticle):
         if dest_cell is None: # particle can move
             if random() < self.gravity.prob:
                 sim.move_particle(self, dest_pos)
-                self.dirty = 1
+                self.updated = True
             else: # particle failed random check, but could've moved
                 self._updateable = True
             return
@@ -213,10 +213,10 @@ class HeapableParticle(BaseParticle):
     def _move(self, sim, dest_pos):
         sim.move_particle(self, dest_pos)
         self.heap.stuck = False
-        self.dirty = 1
+        self.updated = True
 
     def update(self, **kwargs):
-        if self.dirty != 0:
+        if self.updated:
             return
         sim = kwargs['sim']
         limit_triggered = False

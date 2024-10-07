@@ -25,7 +25,8 @@ def print_info(abs_pos, sim):
     print(f'Selected {cell}')
     pos = sim.get_pos(cell.rect.topleft)
     print(f'  Cell located at: {pos.x},{pos.y}')
-    print(f'  Cell dirty is: {cell.dirty}')
+    print(f'  Cell dirty is: {cell.updated}')
+    print(f'  Cell can be updated: {cell._updateable}')
     print(f'  Cell state is: {cell.active}')
     print(f'  Cell stuck is: {cell.heap.stuck}')
     depends_on = []
@@ -68,6 +69,8 @@ def main():
 
     sim.add_particle(particles.TestParticle(), (10,46))
     sim.add_particle(particles.TestParticle(), (10,47))
+
+    global brush_size
 
     while running:
         for event in pygame.event.get():
@@ -239,7 +242,22 @@ def test_func_perf_other(pr, count):
     pr.disable()
 
 if __name__ == '__main__':
-    #main()
+    PROFILE_MAIN = False
+    PROFILE_TEST = False
+
+    if PROFILE_MAIN:
+        pr = cProfile.Profile()
+        main()
+        st = io.StringIO()
+        sortby = SortKey.CUMULATIVE
+        ps = pstats.Stats(pr, stream=st).sort_stats(sortby)
+        ps.print_stats()
+        print(st.getvalue())
+    else:
+        main()
+
+    if not PROFILE_TEST:
+        exit(0)
 
     func_type = ['Reassigned', 'Dotted']
     for i in range(2):
@@ -252,7 +270,7 @@ if __name__ == '__main__':
         print(f'{func_type[i]}')
         print('--------------------------------------------------')
         print(st.getvalue())
-    exit(0)
+    #exit(0)
 
     group_type = ['list', 'group']
     for i in range(2):
@@ -265,7 +283,7 @@ if __name__ == '__main__':
         print(f'{group_type[i]}')
         print('--------------------------------------------------')
         print(st.getvalue())
-    exit(0)
+    #exit(0)
 
     sprite_type = ['Normal', 'Dirty']
     movement_type = ['Stationary', 'Moving']

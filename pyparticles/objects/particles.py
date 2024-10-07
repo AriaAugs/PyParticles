@@ -11,6 +11,9 @@ _sprite_rect.topleft = (10, 0)
 _SPRITE_SHEET.fill('sienna2', _sprite_rect)
 _sprite_rect.topleft = (10, 10)
 _SPRITE_SHEET.fill('sienna3', _sprite_rect)
+_SPRITES = [[
+    _SPRITE_SHEET.subsurface(pygame.Rect(x*10, y*10, 10, 10))
+    for x in range(2)] for y in range(2)]
 
 class TestParticle(
     properties.HeapableParticle,
@@ -29,12 +32,8 @@ class TestParticle(
             heap_prob = 0.5,
             heap_limit = [(1,2),(-1,2)]
         )
-        self.image = _SPRITE_SHEET
+        self.image = _SPRITES[randint(0, 1)][randint(0, 1)]
         self.rect = _sprite_rect.copy()
-        self.source_rect = _sprite_rect.copy()
-        indices = [0, 10]
-        self.source_rect.top = indices[randint(0, 1)]
-        self.source_rect.left = indices[randint(0, 1)]
 
     def update(self, **kwargs):
         self.pre_update()

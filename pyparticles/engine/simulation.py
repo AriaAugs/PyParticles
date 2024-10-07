@@ -34,22 +34,20 @@ class ParticleSim():
         img_size = (self._sim_size.x*self._cell_width, self._sim_size.y*self._cell_width)
         self.image = pygame.Surface(img_size)
         # create a sprite group for all the particles and a list to track newly added particles
-        self._particle_group = pygame.sprite.LayeredDirty()
-        self._particle_group.set_timing_threshold(1000.0 / 30.0) # TODO: find better way to avoid sprites still being dirty after draw
-        self._update_group = pygame.sprite.LayeredDirty()
+        self._particle_group = pygame.sprite.Group()
+        self._update_group = pygame.sprite.Group()
         self._new_particles = []
         # set the background image that will be used when redrawing the sim
-        bgd = None
+        self._background = None
         if bg_img is not None:
-            bgd = pygame.transform.smoothscale(bg_img)
+            self._background = pygame.transform.smoothscale(bg_img, img_size)
         elif bg_clr is not None:
-            bgd = pygame.Surface(img_size)
-            bgd.fill(bg_clr)
+            self._background = pygame.Surface(img_size)
+            self._background.fill(bg_clr)
         else:
             print('Using default black background for sim')
-            bgd = pygame.Surface(img_size)
-            bgd.fill('black')
-        self._particle_group.clear(self.image, bgd)
+            self._background = pygame.Surface(img_size)
+            self._background.fill('black')
 
     def _get_abs_pos(self, pos):
         """Get the absolute/pixel position that corresponds to a given grid position.
@@ -156,21 +154,11 @@ class ParticleSim():
                 self._update_group.add(p)
             if not p.active and p in self._update_group:
                 self._update_group.remove(p)
-            if p not in self._new_particles:
-                p.dirty = 0
-        if len(self._particle_group) > 0:
-            print(f'Updating {100 * len(self._update_group) // len(self._particle_group)}% of all particles -- {len(self._update_group)} / {len(self._particle_group)}')
+        #if len(self._particle_group) > 0:
+        #    print(f'Updating {100 * len(self._update_group) // len(self._particle_group)}% of all particles -- {len(self._update_group)} / {len(self._particle_group)}')
         self._update_group.update(**kwargs, sim=self)
-        #self._particle_group.update(**kwargs, sim=self)
+        self.image.blit(self._background, (0, 0))
         self._particle_group.draw(self.image)
-        for p in self._new_particles:
-            if p.dirty != 0:
-                print('New particle still dirty after draw!')
-                p.dirty = 0
-        for p in self._particle_group:
-            if p not in self._new_particles and p.dirty != 0:
-                print('Old particle still dirty after draw!')
-                p.dirty = 0
         self._new_particles = []
 
     def add_particle(self, particle, pos):
