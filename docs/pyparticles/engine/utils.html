@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.1">
-<title>PyParticles.particles.classes API documentation</title>
+<title>pyparticles.engine.utils API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
@@ -22,7 +22,7 @@ hljs.highlightAll();
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>PyParticles.particles.classes</code></h1>
+<h1 class="title">Module <code>pyparticles.engine.utils</code></h1>
 </header>
 <section id="section-intro">
 </section>
@@ -31,84 +31,148 @@ hljs.highlightAll();
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="pyparticles.engine.utils.rand_iter"><code class="name flex">
+<span>def <span class="ident">rand_iter</span></span>(<span>vals)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Iterate over a list (or other iterable) in a random order</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>vals</code></strong> :&ensp;<code>iterable</code></dt>
+<dd>The item to iterate over in a random order</dd>
+</dl>
+<h2 id="yields">Yields</h2>
+<dl>
+<dt><code>any</code></dt>
+<dd>The next item in the random iteration</dd>
+</dl></div>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="PyParticles.particles.classes.BaseParticle"><code class="flex name class">
-<span>class <span class="ident">BaseParticle</span></span>
-<span>(</span><span>*groups)</span>
+<dt id="pyparticles.engine.utils.Point"><code class="flex name class">
+<span>class <span class="ident">Point</span></span>
+<span>(</span><span>x_val, y_val=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Base class for all other particles.</p>
-<p>Subclasses must assign <code>image</code> and <code>rect</code> attributes for the sprites to render properly.</p>
-<p>The following DirtySprite attributes may be overridden for specific behavior:
-- dirty (int): 0 for not dirty, 1 for dirty, 2 for always dirty. Defaults to 1.
-- blendmode (int): See the <code>special_flags</code> argument for <code>pygame.Surface.blit()</code>.
-Defaults to 0.
-- source_rect (pygame.Rect): Area of <code>self.image</code> to draw when rendering this sprite.
-Defaults to None.
-- visible (int): 0 for invisible, 1 for visible. Defaults to 1.
-- layer (int): Which layer to draw this sprite on. Defaults to 0.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>*groups</code></strong></dt>
-<dd>Variable length list of groups to add this sprite to.</dd>
-</dl></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class BaseParticle(pygame.sprite.DirtySprite):
-    &#34;&#34;&#34;Base class for all other particles.
+<pre><code class="python">class Point():
+    def __init__(self, x_val, y_val=None):
+        self.x = 0
+        self.y = 0
+        if y_val is None:
+            if isinstance(x_val, Point):
+                self.x = x_val.x
+                self.y = x_val.y
+            elif isinstance(x_val, (list, tuple)):
+                self.x, self.y = x_val
+            elif isinstance(x_val, Vector2):
+                self.x = int(x_val.x)
+                self.y = int(x_val.y)
+            else:
+                raise ValueError(f&#39;Expected tuple, list, or Vector2, but got {x_val}&#39;)
+        else:
+            self.x = int(x_val)
+            self.y = int(y_val)
 
-    Subclasses must assign `image` and `rect` attributes for the sprites to render properly.
+    def __add__(self, other):
+        other = Point(other)
+        return Point(self.x + other.x, self.y + other.y)
 
-    The following DirtySprite attributes may be overridden for specific behavior:
-        - dirty (int): 0 for not dirty, 1 for dirty, 2 for always dirty. Defaults to 1.
-        - blendmode (int): See the `special_flags` argument for `pygame.Surface.blit()`.
-            Defaults to 0.
-        - source_rect (pygame.Rect): Area of `self.image` to draw when rendering this sprite.
-            Defaults to None.
-        - visible (int): 0 for invisible, 1 for visible. Defaults to 1.
-        - layer (int): Which layer to draw this sprite on. Defaults to 0.
+    def __iadd__(self, other):
+        other = Point(other)
+        self.x += other.x
+        self.y += other.y
+        return self
 
-    Args:
-        *groups: Variable length list of groups to add this sprite to.
+    def __sub__(self, other):
+        other = Point(other)
+        return Point(self.x - other.x, self.y - other.y)
 
-    &#34;&#34;&#34;
+    def __isub__(self, other):
+        other = Point(other)
+        self.x -= other.x
+        self.y -= other.y
+        return self
 
-    def __init__(self, *groups):
-        pygame.sprite.DirtySprite.__init__(self, groups)
-        self._locked = False
+    def __eq__(self, other):
+        other = Point(other)
+        return self.x == other.x and self.y == other.y
 
-    def update(self):
-        &#34;&#34;&#34;Method to control sprite behavior.
+    def __lt__(self, other):
+        other = Point(other)
+        return self.x &lt; other.x and self.y &lt; other.y
 
-        Default method does nothing. To implement specific behavior, it must be overridden
-        by subclasses. However, the `if self.dirty != 0` check included in the default
-        implementation is important to carry over to prevent particles from being updated
-        multiple times per frame (due to other particles interacting with this particle)
-        &#34;&#34;&#34;
-        if self.dirty != 0:
-            pass</code></pre>
+    def __gt__(self, other):
+        other = Point(other)
+        return self.x &gt; other.x and self.y &gt; other.y
+
+    def __le__(self, other):
+        other = Point(other)
+        return self.x &lt;= other.x and self.y &lt;= other.y
+
+    def __ge__(self, other):
+        other = Point(other)
+        return self.x &gt;= other.x and self.y &gt;= other.y
+
+    def __iter__(self):
+        yield self.x
+        yield self.y
+
+    def clamp(self, min_point, max_point, exclude_min=False, exclude_max=True):
+        min_point = Point(min_point)
+        if exclude_min:
+            min_point += (1, 1)
+        max_point = Point(max_point)
+        if exclude_max:
+            max_point -= (1, 1)
+        clamped_point = Point(self)
+        if clamped_point.x &lt;= min_point.x:
+            clamped_point.x = min_point.x
+        elif clamped_point.x &gt;= max_point.x:
+            clamped_point.x = max_point.x
+        if clamped_point.y &lt;= min_point.y:
+            clamped_point.y = min_point.y
+        elif clamped_point.y &gt;= max_point.y:
+            clamped_point.y = max_point.y
+        return clamped_point
+
+    def clamp_self(self, min_point, max_point, exclude_min=False, exclude_max=True):
+        clamped_point = self.clamp(min_point, max_point, exclude_min, exclude_max)
+        self.x = clamped_point.x
+        self.y = clamped_point.y
+
+    def get_normalized(self):
+        # TODO: implement a probabilistic version of this
+        return Point(self.x // abs(self.x), self.y // abs(self.y))</code></pre>
 </details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>pygame.sprite.DirtySprite</li>
-<li>pygame.sprite.Sprite</li>
-</ul>
 <h3>Methods</h3>
 <dl>
-<dt id="PyParticles.particles.classes.BaseParticle.update"><code class="name flex">
-<span>def <span class="ident">update</span></span>(<span>self)</span>
+<dt id="pyparticles.engine.utils.Point.clamp"><code class="name flex">
+<span>def <span class="ident">clamp</span></span>(<span>self, min_point, max_point, exclude_min=False, exclude_max=True)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Method to control sprite behavior.</p>
-<p>Default method does nothing. To implement specific behavior, it must be overridden
-by subclasses. However, the <code>if self.dirty != 0</code> check included in the default
-implementation is important to carry over to prevent particles from being updated
-multiple times per frame (due to other particles interacting with this particle)</p></div>
+<div class="desc"></div>
+</dd>
+<dt id="pyparticles.engine.utils.Point.clamp_self"><code class="name flex">
+<span>def <span class="ident">clamp_self</span></span>(<span>self, min_point, max_point, exclude_min=False, exclude_max=True)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pyparticles.engine.utils.Point.get_normalized"><code class="name flex">
+<span>def <span class="ident">get_normalized</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -122,15 +186,22 @@ multiple times per frame (due to other particles interacting with this particle)
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="PyParticles.particles" href="index.html">PyParticles.particles</a></code></li>
+<li><code><a title="pyparticles.engine" href="index.html">pyparticles.engine</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="pyparticles.engine.utils.rand_iter" href="#pyparticles.engine.utils.rand_iter">rand_iter</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="PyParticles.particles.classes.BaseParticle" href="#PyParticles.particles.classes.BaseParticle">BaseParticle</a></code></h4>
+<h4><code><a title="pyparticles.engine.utils.Point" href="#pyparticles.engine.utils.Point">Point</a></code></h4>
 <ul class="">
-<li><code><a title="PyParticles.particles.classes.BaseParticle.update" href="#PyParticles.particles.classes.BaseParticle.update">update</a></code></li>
+<li><code><a title="pyparticles.engine.utils.Point.clamp" href="#pyparticles.engine.utils.Point.clamp">clamp</a></code></li>
+<li><code><a title="pyparticles.engine.utils.Point.clamp_self" href="#pyparticles.engine.utils.Point.clamp_self">clamp_self</a></code></li>
+<li><code><a title="pyparticles.engine.utils.Point.get_normalized" href="#pyparticles.engine.utils.Point.get_normalized">get_normalized</a></code></li>
 </ul>
 </li>
 </ul>

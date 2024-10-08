@@ -4,8 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.1">
-<title>PyParticles.particles.types API documentation</title>
-<meta name="description" content="">
+<title>pyparticles.typecheck API documentation</title>
+<meta name="description" content="import pygame
+from typing import TypedDict
+from pyparticles.engine. sim import ParticleSim …">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
@@ -22,24 +24,25 @@ hljs.highlightAll();
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>PyParticles.particles.types</code></h1>
+<h1 class="title">Module <code>pyparticles.typecheck</code></h1>
 </header>
 <section id="section-intro">
+<p>import pygame
+from typing import TypedDict
+from pyparticles.engine. sim import ParticleSim</p>
+<p>type Number = int | float
+type SupportsVec2 = pygame.Vector2 | tuple[int, int] | tuple[float, float] | Number</p>
+<p>class ParticleKwargs(TypedDict, total=False):
+groups: list[pygame.sprite.Group] # type: ignore
+gravity: SupportsVec2</p>
+<p>class UpdateKwargs(TypedDict):
+sim: ParticleSim</p>
 </section>
 <section>
 </section>
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-functions">Functions</h2>
-<dl>
-<dt id="PyParticles.particles.types.test"><code class="name flex">
-<span>def <span class="ident">test</span></span>(<span>)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 </section>
 <section>
 </section>
@@ -51,12 +54,7 @@ hljs.highlightAll();
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="PyParticles.particles" href="index.html">PyParticles.particles</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="PyParticles.particles.types.test" href="#PyParticles.particles.types.test">test</a></code></li>
+<li><code><a title="pyparticles" href="index.html">pyparticles</a></code></li>
 </ul>
 </li>
 </ul>

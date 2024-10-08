@@ -2,5 +2,9 @@
     "pylint.args": [
         "--unsafe-load-any-extension=y",
         "--jobs=0"
+    ],
+    "mypy-type-checker.args": [
+        //"--strict",
+        "--enable-incomplete-feature=NewGenericSyntax"
     ]
 }

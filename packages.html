@@ -1,0 +1,33 @@
+<html>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+      <div class="mermaid">
+    
+        classDiagram
+          class pyparticles {
+          }
+          class engine {
+          }
+          class sim {
+          }
+          class utils {
+          }
+          class graphics {
+          }
+          class particles {
+          }
+          class properties {
+          }
+          class types {
+          }
+          sim --> engine
+          sim --> utils
+          properties --> engine
+          properties --> sim
+          properties --> utils
+          types --> particles
+          types --> properties
+  
+       </div>
+  </body>
+</html>
