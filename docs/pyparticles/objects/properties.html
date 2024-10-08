@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.1">
+<title>pyparticles.objects.properties API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>pyparticles.objects.properties</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="pyparticles.objects.properties.random"><code class="name flex">
+<span>def <span class="ident">random</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>random() -&gt; x in the interval [0, 1).</p></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="pyparticles.objects.properties.BaseParticle"><code class="flex name class">
+<span>class <span class="ident">BaseParticle</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for all other particles.</p>
+<p>Subclasses must assign <code>image</code> and <code>rect</code> attributes for the sprites to render properly.</p>
+<p>This is designed to work in a hybrid inheritence approach. The <code>__init__()</code> methods will
+work cooperatively, each calling <code>super().__init__()</code> to ensure a given particle initializes
+all its properties. The <code>update()</code> methods, however, will work in a more separate fashion,
+where none of the <code>update()</code> methods call <code>super().update()</code>. This allows a given particle
+type to control the order in which it executes specific behavior.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>**kwargs</code></strong> :&ensp;<code>any</code></dt>
+<dd>
+<p>Variable length list of keyword arguments. The following keyword arguments
+are recognized:</p>
+<ul>
+<li>groups (list): List of groups to add this sprite to. Defaults to None.</li>
+</ul>
+</dd>
+</dl>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>image</code></strong> :&ensp;<code>pygame.Surface</code></dt>
+<dd>The image for this sprite.</dd>
+<dt><strong><code>rect</code></strong> :&ensp;<code>pygame.Rect</code></dt>
+<dd>The rectangle corresponding to the location and size of this sprite.</dd>
+<dt><strong><code>updated</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Dirty bit for the sprite. If True, the sprite has been updated this frame.</dd>
+<dt><strong><code>updateable</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Whether or not this particle can update itself, assuming all
+probabilistic behavior triggers.</dd>
+<dt><strong><code>dependants</code></strong> :&ensp;<code>list[<a title="pyparticles.objects.properties.BaseParticle" href="#pyparticles.objects.properties.BaseParticle">BaseParticle</a>]</code></dt>
+<dd>Particles that can interact with this particle when active</dd>
+<dt><strong><code>active</code></strong> :&ensp;<code>bool</code></dt>
+<dd>active state of particle</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class BaseParticle(pygame.sprite.Sprite):
+    &#34;&#34;&#34;Base class for all other particles.
+
+    Subclasses must assign `image` and `rect` attributes for the sprites to render properly.
+
+    This is designed to work in a hybrid inheritence approach. The `__init__()` methods will
+    work cooperatively, each calling `super().__init__()` to ensure a given particle initializes
+    all its properties. The `update()` methods, however, will work in a more separate fashion,
+    where none of the `update()` methods call `super().update()`. This allows a given particle
+    type to control the order in which it executes specific behavior.
+
+    Args:
+        **kwargs (any): Variable length list of keyword arguments. The following keyword arguments
+            are recognized:\n
+            - groups (list): List of groups to add this sprite to. Defaults to None.
+
+    Attributes:
+        image (pygame.Surface): The image for this sprite.
+        rect (pygame.Rect): The rectangle corresponding to the location and size of this sprite.
+        updated (bool): Dirty bit for the sprite. If True, the sprite has been updated this frame.
+        updateable (bool): Whether or not this particle can update itself, assuming all
+            probabilistic behavior triggers.
+        dependants (list[BaseParticle]): Particles that can interact with this particle when active
+        active (bool): active state of particle
+    &#34;&#34;&#34;
+
+    # dirty: int
+    # image: pygame.Surface
+    # rect: pygame.Rect
+
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            if key == &#39;groups&#39;:
+                pygame.sprite.Sprite.__init__(self, *value)
+                return
+        pygame.sprite.Sprite.__init__(self)
+        # initialize attributes to default values
+        self.image = None
+        self.rect = None
+        self.updated = True
+        self._updateable = True
+        self._dependants = []
+        self.active = True
+        # Vector list of particles this depends on to be activated. Values are set by the init
+        # functions of subclasses, and this list remains unchanged afterwards. If this particle
+        # fails to update and all the particles it depends on are deactivated, then this particle
+        # will deactivate.
+        self._depends_on = []
+
+    def add_dependant(self, particle):
+        self._dependants.append(particle)
+
+    def activate(self):
+        self.active = True
+        while len(self._dependants) &gt; 0:
+            self._dependants.pop().activate()
+        # TODO: some way to call update() to update particles on same frame they were activated on?
+
+    def pre_update(self):
+        self.updated = False
+        self._updateable = False
+
+    def update(self, **kwargs):
+        &#34;&#34;&#34;Method to control sprite behavior.
+
+        Default method does nothing. To implement specific behavior, it must be overridden by
+        subclasses. These implementations should be prefaced by `if self.dirty != 0: pass` to
+        prevent the particle from being updated multiple times per frame.
+        &#34;&#34;&#34;
+        if self.updated or self._updateable:
+            while len(self._dependants) &gt; 0:
+                self._dependants.pop().activate()
+            return
+        sim = kwargs[&#39;sim&#39;]
+        pos = sim.get_pos(self.rect.topleft)
+        for d in self._depends_on:
+            p = sim.get_cell(pos + d)
+            if p is not None:
+                p.add_dependant(self)
+        self.active = False</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pygame.sprite.Sprite</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="pyparticles.objects.particles.TestParticle" href="particles.html#pyparticles.objects.particles.TestParticle">TestParticle</a></li>
+<li><a title="pyparticles.objects.properties.GravityParticle" href="#pyparticles.objects.properties.GravityParticle">GravityParticle</a></li>
+<li><a title="pyparticles.objects.properties.HeapableParticle" href="#pyparticles.objects.properties.HeapableParticle">HeapableParticle</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="pyparticles.objects.properties.BaseParticle.activate"><code class="name flex">
+<span>def <span class="ident">activate</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pyparticles.objects.properties.BaseParticle.add_dependant"><code class="name flex">
+<span>def <span class="ident">add_dependant</span></span>(<span>self, particle)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pyparticles.objects.properties.BaseParticle.pre_update"><code class="name flex">
+<span>def <span class="ident">pre_update</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pyparticles.objects.properties.BaseParticle.update"><code class="name flex">
+<span>def <span class="ident">update</span></span>(<span>self, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Method to control sprite behavior.</p>
+<p>Default method does nothing. To implement specific behavior, it must be overridden by
+subclasses. These implementations should be prefaced by <code>if self.dirty != 0: pass</code> to
+prevent the particle from being updated multiple times per frame.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="pyparticles.objects.properties.GravityArgs"><code class="flex name class">
+<span>class <span class="ident">GravityArgs</span></span>
+<span>(</span><span>vec=(0, 0), prob=1.0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GravityArgs():
+    def __init__(self, vec=(0,0), prob=1.0):
+        self.vec = Point(vec)
+        self.prob = prob
+
+    def copy(self):
+        return GravityArgs(vec=self.vec, prob=self.prob)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="pyparticles.objects.properties.GravityArgs.copy"><code class="name flex">
+<span>def <span class="ident">copy</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="pyparticles.objects.properties.GravityParticle"><code class="flex name class">
+<span>class <span class="ident">GravityParticle</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Particle with gravity (or any other kind of constant linear force)</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>
+<p>Variable length list of keyword arguments. The following keyword arguments are
+recognized:</p>
+<ul>
+<li>gravity (GravityArgs): GravityArgs object representing the direction and probability
+of this particle's gravity.</li>
+<li>gravity_vec (Point, Point-like): X,Y vector representing the force to be applied
+to the particle. Defaults to (0, 0).</li>
+<li>gravity_prob (float): Probablity (from 0.0 to 1.0) that the particle will update due to
+this property. Defaults to 1.0.</li>
+</ul>
+</dd>
+</dl>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>gravity</code></strong> :&ensp;<code><a title="pyparticles.objects.properties.GravityArgs" href="#pyparticles.objects.properties.GravityArgs">GravityArgs</a></code></dt>
+<dd>The gravity vector and probability of the particle.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GravityParticle(BaseParticle):
+    &#34;&#34;&#34;Particle with gravity (or any other kind of constant linear force)
+
+    Args:
+        **kwargs: Variable length list of keyword arguments. The following keyword arguments are
+            recognized:\n
+            - gravity (GravityArgs): GravityArgs object representing the direction and probability
+                of this particle&#39;s gravity.
+            - gravity_vec (Point, Point-like): X,Y vector representing the force to be applied
+                to the particle. Defaults to (0, 0).
+            - gravity_prob (float): Probablity (from 0.0 to 1.0) that the particle will update due to
+                this property. Defaults to 1.0.
+
+    Attributes:
+        gravity (GravityArgs): The gravity vector and probability of the particle.
+    &#34;&#34;&#34;
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.gravity = GravityArgs()
+        for key, value in kwargs.items():
+            if key == &#39;gravity&#39;:
+                self.gravity = value.copy()
+            if key == &#39;gravity_vec&#39;:
+                self.gravity.vec = Point(value)
+            if key == &#39;gravity_prob&#39;:
+                self.gravity.prob = value
+        self._depends_on.append(self.gravity.vec)
+
+    def update(self, **kwargs):
+        if self.updated:
+            return
+        sim = kwargs[&#39;sim&#39;]
+        # apply gravity and clamp the new position
+        dest_pos = sim.get_pos(self.rect.topleft) + self.gravity.vec
+        # we can&#39;t move because we&#39;re at the edge of the sim
+        if not sim.in_bounds(dest_pos):
+            return
+        # try to move to the new position
+        # TODO: chained physics resolution
+        dest_cell = sim.get_cell(dest_pos)
+        if dest_cell is None: # particle can move
+            if random() &lt; self.gravity.prob:
+                sim.move_particle(self, dest_pos)
+                self.updated = True
+            else: # particle failed random check, but could&#39;ve moved
+                self._updateable = True
+            return
+        # particle is blocked - cehck if blocking particle is active
+        if dest_cell.active:
+            self._updateable = True</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pyparticles.objects.properties.BaseParticle" href="#pyparticles.objects.properties.BaseParticle">BaseParticle</a></li>
+<li>pygame.sprite.Sprite</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="pyparticles.objects.particles.TestParticle" href="particles.html#pyparticles.objects.particles.TestParticle">TestParticle</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="pyparticles.objects.properties.BaseParticle" href="#pyparticles.objects.properties.BaseParticle">BaseParticle</a></b></code>:
+<ul class="hlist">
+<li><code><a title="pyparticles.objects.properties.BaseParticle.update" href="#pyparticles.objects.properties.BaseParticle.update">update</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="pyparticles.objects.properties.HeapArgs"><code class="flex name class">
+<span>class <span class="ident">HeapArgs</span></span>
+<span>(</span><span>vecs=None, prob=1.0, limits=None, stuck=False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HeapArgs():
+    def __init__(self, vecs=None, prob=1.0, limits=None, stuck=False):
+        self.vecs = []
+        if vecs is not None:
+            for v in vecs:
+                self.vecs.append(Point(v))
+        self.prob = prob
+        self.limits = []
+        if limits is not None:
+            for v in limits:
+                self.limits.append(Point(v))
+        self.stuck = stuck
+
+    def copy(self):
+        return HeapArgs(vecs=self.vecs, prob=self.prob, limits=self.limits, stuck=self.stuck)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="pyparticles.objects.properties.HeapArgs.copy"><code class="name flex">
+<span>def <span class="ident">copy</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="pyparticles.objects.properties.HeapableParticle"><code class="flex name class">
+<span>class <span class="ident">HeapableParticle</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Particle that can form heaps/piles.</p>
+<p>Does not inherit from GravityParticle, but subclasses must inherit from GravityParticle. To
+ensure ideal behavior, inherit from GravityParticle immediately before this, so particles will
+immediately try to form heaps is they cannot fall.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>
+<p>Variable length list of keyword arguments. The following keyword arguments are
+recognized:</p>
+<ul>
+<li>heap_vec (list[Point], list[Point-like]): List of x,y vectors representing the
+directions this particle can move to form heaps. Defaults to [].</li>
+<li>heap_prob (float): Probablity (from 0.0 to 1.0) that the particle will update due to
+this property. This can be thought of as the particle's 'friction'.
+Defaults to 1.0.</li>
+<li>heap_limit (list[Point], list[Point-like]): List of x,y vectors that will force this
+particle to fall if any of them are empty. Defaults to [].</li>
+<li>heap_stuck (bool): Whether or not</li>
+</ul>
+</dd>
+</dl>
+<h2 id="attributes">Attributes</h2>
+<p>TODO</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HeapableParticle(BaseParticle):
+    &#34;&#34;&#34;Particle that can form heaps/piles.
+
+    Does not inherit from GravityParticle, but subclasses must inherit from GravityParticle. To
+    ensure ideal behavior, inherit from GravityParticle immediately before this, so particles will
+    immediately try to form heaps is they cannot fall.
+
+    Args:
+        **kwargs: Variable length list of keyword arguments. The following keyword arguments are
+            recognized:\n
+            - heap_vec (list[Point], list[Point-like]): List of x,y vectors representing the
+                directions this particle can move to form heaps. Defaults to [].
+            - heap_prob (float): Probablity (from 0.0 to 1.0) that the particle will update due to
+                this property. This can be thought of as the particle&#39;s &#39;friction&#39;.
+                Defaults to 1.0.
+            - heap_limit (list[Point], list[Point-like]): List of x,y vectors that will force this
+                particle to fall if any of them are empty. Defaults to [].
+            - heap_stuck (bool): Whether or not
+
+    Attributes:
+        TODO
+    &#34;&#34;&#34;
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.heap = HeapArgs()
+        for key, value in kwargs.items():
+            if key == &#39;heap&#39;:
+                self.heap = value.copy()
+            if key == &#39;heap_vec&#39;:
+                for p in value:
+                    self.heap.vecs.append(Point(p))
+            if key == &#39;heap_prob&#39;:
+                self.heap.prob = value
+            if key == &#39;heap_limit&#39;:
+                for p in value:
+                    self.heap.limits.append(Point(p))
+            if key == &#39;heap_stuck&#39;:
+                self.heap.stuck = value
+        if self.heap.vecs is not None and self.heap.prob &gt;= 1.0:
+            self._depends_on.extend(self.heap.vecs)
+        if self.heap.limits is not None:
+            self._depends_on.extend(self.heap.limits)
+
+    def _move(self, sim, dest_pos):
+        sim.move_particle(self, dest_pos)
+        self.heap.stuck = False
+        self.updated = True
+
+    def update(self, **kwargs):
+        if self.updated:
+            return
+        sim = kwargs[&#39;sim&#39;]
+        limit_triggered = False
+        # check if this particle is on top of another particle
+        pos = sim.get_pos(self.rect.topleft)
+        dest_pos = pos + self.gravity.vec
+        if sim.in_bounds(dest_pos) and sim.get_cell(dest_pos) is None:
+            return
+        # check if this particle is at its heap limit
+        for lim_vec in rand_iter(self.heap.limits):
+            dest_pos = pos + lim_vec
+            if not sim.in_bounds(dest_pos):
+                continue
+            if sim.get_cell(dest_pos) is None:
+                dest_pos = pos + lim_vec.get_normalized()
+                if not sim.in_bounds(dest_pos):
+                    continue
+                dest_cell = sim.get_cell(dest_pos)
+                if dest_cell is None:
+                    self._move(sim, dest_pos)
+                    return
+                limit_triggered = True
+                self._updateable |= dest_cell.active
+        # check if the particle is stuck in place
+        if self.heap.stuck or limit_triggered:
+            return
+        # try to form a heap
+        for heap_vec in rand_iter(self.heap.vecs):
+            dest_pos = pos + heap_vec
+            if not sim.in_bounds(dest_pos):
+                continue
+            dest_cell = sim.get_cell(dest_pos)
+            if dest_cell is None:
+                if random() &gt;= self.heap.prob:
+                    self.heap.stuck = True
+                    return
+                self._move(sim, dest_pos)
+                return
+            if self.heap.prob &gt;= 1.0:
+                self._updateable |= dest_cell.active</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pyparticles.objects.properties.BaseParticle" href="#pyparticles.objects.properties.BaseParticle">BaseParticle</a></li>
+<li>pygame.sprite.Sprite</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="pyparticles.objects.particles.TestParticle" href="particles.html#pyparticles.objects.particles.TestParticle">TestParticle</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="pyparticles.objects.properties.BaseParticle" href="#pyparticles.objects.properties.BaseParticle">BaseParticle</a></b></code>:
+<ul class="hlist">
+<li><code><a title="pyparticles.objects.properties.BaseParticle.update" href="#pyparticles.objects.properties.BaseParticle.update">update</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="pyparticles.objects" href="index.html">pyparticles.objects</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="pyparticles.objects.properties.random" href="#pyparticles.objects.properties.random">random</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="pyparticles.objects.properties.BaseParticle" href="#pyparticles.objects.properties.BaseParticle">BaseParticle</a></code></h4>
+<ul class="">
+<li><code><a title="pyparticles.objects.properties.BaseParticle.activate" href="#pyparticles.objects.properties.BaseParticle.activate">activate</a></code></li>
+<li><code><a title="pyparticles.objects.properties.BaseParticle.add_dependant" href="#pyparticles.objects.properties.BaseParticle.add_dependant">add_dependant</a></code></li>
+<li><code><a title="pyparticles.objects.properties.BaseParticle.pre_update" href="#pyparticles.objects.properties.BaseParticle.pre_update">pre_update</a></code></li>
+<li><code><a title="pyparticles.objects.properties.BaseParticle.update" href="#pyparticles.objects.properties.BaseParticle.update">update</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="pyparticles.objects.properties.GravityArgs" href="#pyparticles.objects.properties.GravityArgs">GravityArgs</a></code></h4>
+<ul class="">
+<li><code><a title="pyparticles.objects.properties.GravityArgs.copy" href="#pyparticles.objects.properties.GravityArgs.copy">copy</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="pyparticles.objects.properties.GravityParticle" href="#pyparticles.objects.properties.GravityParticle">GravityParticle</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pyparticles.objects.properties.HeapArgs" href="#pyparticles.objects.properties.HeapArgs">HeapArgs</a></code></h4>
+<ul class="">
+<li><code><a title="pyparticles.objects.properties.HeapArgs.copy" href="#pyparticles.objects.properties.HeapArgs.copy">copy</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="pyparticles.objects.properties.HeapableParticle" href="#pyparticles.objects.properties.HeapableParticle">HeapableParticle</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.1</a>.</p>
+</footer>
+</body>
+</html>

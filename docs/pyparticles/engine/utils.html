@@ -33,45 +33,150 @@ hljs.highlightAll();
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="pyparticles.engine.utils.clamp"><code class="name flex">
-<span>def <span class="ident">clamp</span></span>(<span>value, min_val, max_val)</span>
+<dt id="pyparticles.engine.utils.rand_iter"><code class="name flex">
+<span>def <span class="ident">rand_iter</span></span>(<span>vals)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Clamp a value between a minimum and maximum value.</p>
+<div class="desc"><p>Iterate over a list (or other iterable) in a random order</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>value</code></strong> :&ensp;<code>int, float</code></dt>
-<dd>The value to clamp.</dd>
-<dt><strong><code>min_val</code></strong> :&ensp;<code>int, float</code></dt>
-<dd>The minimum value to clamp to.</dd>
-<dt><strong><code>max_val</code></strong> :&ensp;<code>int, float</code></dt>
-<dd>The maximum value to clamp to.</dd>
+<dt><strong><code>vals</code></strong> :&ensp;<code>iterable</code></dt>
+<dd>The item to iterate over in a random order</dd>
 </dl>
-<h2 id="returns">Returns</h2>
+<h2 id="yields">Yields</h2>
 <dl>
-<dt><code>int, float</code></dt>
-<dd>The clamped value.</dd>
-</dl></div>
-</dd>
-<dt id="pyparticles.engine.utils.vec_to_ints"><code class="name flex">
-<span>def <span class="ident">vec_to_ints</span></span>(<span>vec)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Convert a pygame.Vector2 into a tuple of 2 integers.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>vec</code></strong> :&ensp;<code>pygame.Vector2</code></dt>
-<dd>The vector to convert to a tuple.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>tuple</code></dt>
-<dd>2-integer tuple equivalent of the given vector.</dd>
+<dt><code>any</code></dt>
+<dd>The next item in the random iteration</dd>
 </dl></div>
 </dd>
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="pyparticles.engine.utils.Point"><code class="flex name class">
+<span>class <span class="ident">Point</span></span>
+<span>(</span><span>x_val, y_val=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Point():
+    def __init__(self, x_val, y_val=None):
+        self.x = 0
+        self.y = 0
+        if y_val is None:
+            if isinstance(x_val, Point):
+                self.x = x_val.x
+                self.y = x_val.y
+            elif isinstance(x_val, (list, tuple)):
+                self.x, self.y = x_val
+            elif isinstance(x_val, Vector2):
+                self.x = int(x_val.x)
+                self.y = int(x_val.y)
+            else:
+                raise ValueError(f&#39;Expected tuple, list, or Vector2, but got {x_val}&#39;)
+        else:
+            self.x = int(x_val)
+            self.y = int(y_val)
+
+    def __add__(self, other):
+        other = Point(other)
+        return Point(self.x + other.x, self.y + other.y)
+
+    def __iadd__(self, other):
+        other = Point(other)
+        self.x += other.x
+        self.y += other.y
+        return self
+
+    def __sub__(self, other):
+        other = Point(other)
+        return Point(self.x - other.x, self.y - other.y)
+
+    def __isub__(self, other):
+        other = Point(other)
+        self.x -= other.x
+        self.y -= other.y
+        return self
+
+    def __eq__(self, other):
+        other = Point(other)
+        return self.x == other.x and self.y == other.y
+
+    def __lt__(self, other):
+        other = Point(other)
+        return self.x &lt; other.x and self.y &lt; other.y
+
+    def __gt__(self, other):
+        other = Point(other)
+        return self.x &gt; other.x and self.y &gt; other.y
+
+    def __le__(self, other):
+        other = Point(other)
+        return self.x &lt;= other.x and self.y &lt;= other.y
+
+    def __ge__(self, other):
+        other = Point(other)
+        return self.x &gt;= other.x and self.y &gt;= other.y
+
+    def __iter__(self):
+        yield self.x
+        yield self.y
+
+    def clamp(self, min_point, max_point, exclude_min=False, exclude_max=True):
+        min_point = Point(min_point)
+        if exclude_min:
+            min_point += (1, 1)
+        max_point = Point(max_point)
+        if exclude_max:
+            max_point -= (1, 1)
+        clamped_point = Point(self)
+        if clamped_point.x &lt;= min_point.x:
+            clamped_point.x = min_point.x
+        elif clamped_point.x &gt;= max_point.x:
+            clamped_point.x = max_point.x
+        if clamped_point.y &lt;= min_point.y:
+            clamped_point.y = min_point.y
+        elif clamped_point.y &gt;= max_point.y:
+            clamped_point.y = max_point.y
+        return clamped_point
+
+    def clamp_self(self, min_point, max_point, exclude_min=False, exclude_max=True):
+        clamped_point = self.clamp(min_point, max_point, exclude_min, exclude_max)
+        self.x = clamped_point.x
+        self.y = clamped_point.y
+
+    def get_normalized(self):
+        # TODO: implement a probabilistic version of this
+        return Point(self.x // abs(self.x), self.y // abs(self.y))</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="pyparticles.engine.utils.Point.clamp"><code class="name flex">
+<span>def <span class="ident">clamp</span></span>(<span>self, min_point, max_point, exclude_min=False, exclude_max=True)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pyparticles.engine.utils.Point.clamp_self"><code class="name flex">
+<span>def <span class="ident">clamp_self</span></span>(<span>self, min_point, max_point, exclude_min=False, exclude_max=True)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="pyparticles.engine.utils.Point.get_normalized"><code class="name flex">
+<span>def <span class="ident">get_normalized</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -86,8 +191,19 @@ hljs.highlightAll();
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="pyparticles.engine.utils.clamp" href="#pyparticles.engine.utils.clamp">clamp</a></code></li>
-<li><code><a title="pyparticles.engine.utils.vec_to_ints" href="#pyparticles.engine.utils.vec_to_ints">vec_to_ints</a></code></li>
+<li><code><a title="pyparticles.engine.utils.rand_iter" href="#pyparticles.engine.utils.rand_iter">rand_iter</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="pyparticles.engine.utils.Point" href="#pyparticles.engine.utils.Point">Point</a></code></h4>
+<ul class="">
+<li><code><a title="pyparticles.engine.utils.Point.clamp" href="#pyparticles.engine.utils.Point.clamp">clamp</a></code></li>
+<li><code><a title="pyparticles.engine.utils.Point.clamp_self" href="#pyparticles.engine.utils.Point.clamp_self">clamp_self</a></code></li>
+<li><code><a title="pyparticles.engine.utils.Point.get_normalized" href="#pyparticles.engine.utils.Point.get_normalized">get_normalized</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
