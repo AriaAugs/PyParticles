@@ -107,9 +107,14 @@ class ParticleSim():
         return True
 
     def remove_particle(self, pos: Point) -> None:
+        # get the particle to remove
         _, cell = self.get_cell(pos)
         if cell is None:
             return
-        cell.activate()
+        # active the particle's dependants
+        cell.activate_dependants()
+        # remove the particle from all sprite groups, the active particle list, and the sim grid
         cell.kill()
+        if cell in self._active_particles:
+            self._active_particles.remove(cell)
         self._sim_grid[pos.y][pos.x] = None
