@@ -1,194 +1,115 @@
 import pygame
+from pyparticles.objects.properties import UpdateKwarg, BaseParticle
+from typing import Optional
 from pyparticles.engine.utils import Point
+from random import randint
 
 class ParticleSim():
-    """Self-contained particle simulation.
 
-    On each call to `update()`, all particles in this simulation will be updated, then they will
-    be drawn onto an image that spans the entire simulation. By encapsulating the simulation like
-    this, it should be easier to change where the simulation is drawn within the program window
-    and to apply pan/zoom to the final image displayed to the user.
+    image: pygame.Surface
+    _grid_size: Point
+    _sim_grid: list[list[Optional[BaseParticle]]]
+    _sim_frame: int
+    _cell_size: Point
+    _particles: pygame.sprite.Group
+    _active_particles: list[BaseParticle]
+    _update_queue: list[BaseParticle]
+    _background: pygame.Surface
 
-    Args:
-        sim_size (tuple): Grid size of the simulation.
-        cell_size (tuple): Pixel size of each grid cell.
-        bg_img (pygame.Surface): Background image for the simulation. Defaults to None.
-        bg_clr (pygame.Color): Background color for the simulation. Defaults to None.
-        chunk_size (int): Size of smallest map chunks to use for optimization. Defaults to 8.
-
-    Attributes:
-        image (pygame.Surface): The image corresponding to the current simulation state.
-    """
-
-    # image: pygame.Surface
-
-    def __init__(self, sim_size, cell_size, bg_img=None, bg_clr=None):
-        # break the sim size into width and height, then make a 2D array of that size
-        self._sim_size = Point(sim_size)
+    def __init__(self, sim_size, cell_size, background) -> None:
+        # sim size and sim representation
+        self._grid_size = Point(sim_size)
         self._sim_grid = [
-            [None for x in range(self._sim_size.x)]
-            for y in range(self._sim_size.y)]
-        # break the cell size into width and height, then create a surface to draw the simulation
-        # on. This surface will be big enough to draw the entire simulation on at 1x scale
-        self._cell_width, self._cell_height = cell_size
-        img_size = (self._sim_size.x*self._cell_width, self._sim_size.y*self._cell_width)
-        self.image = pygame.Surface(img_size)
-        # create a sprite group for all the particles and a list to track newly added particles
-        self._particle_group = pygame.sprite.Group()
-        self._update_group = pygame.sprite.Group()
-        self._new_particles = []
-        # set the background image that will be used when redrawing the sim
-        self._background = None
-        if bg_img is not None:
-            self._background = pygame.transform.smoothscale(bg_img, img_size)
-        elif bg_clr is not None:
-            self._background = pygame.Surface(img_size)
-            self._background.fill(bg_clr)
+            [None for x in range(int(self._grid_size.x))]
+            for y in range(int(self._grid_size.y))
+        ]
+        self._sim_frame = 0
+        # cell size and sim image
+        self._cell_size = Point(cell_size)
+        image_size = (
+            self._grid_size.x * self._cell_size.x,
+            self._grid_size.y * self._cell_size.y
+        )
+        self.image = pygame.Surface(image_size)
+        # groups for particles
+        self._particles = pygame.sprite.Group()
+        self._active_particles = []
+        self._update_queue = []
+        # TODO: need new particles list???
+        if isinstance(background, pygame.Surface):
+            self._background = background.copy()
         else:
-            print('Using default black background for sim')
-            self._background = pygame.Surface(img_size)
-            self._background.fill('black')
+            self._background = pygame.Surface(image_size)
+            self._background.fill(background)
 
-    def _get_abs_pos(self, pos):
-        """Get the absolute/pixel position that corresponds to a given grid position.
+    def in_bounds(self, pos: Point) -> bool:
+        return Point(0, 0) <= pos < self._grid_size
 
-        Args:
-            pos (Point, Point-like): The grid position to translate to an absolute position.
-
-        Returns:
-            Point: The absolute/grid position that corresponds to the given grid position.
-        """
-        if not isinstance(pos, Point):
-            pos = Point(pos)
-        return Point(pos.x * self._cell_width, pos.y * self._cell_height)
-
-    def in_bounds(self, pos):
-        """Check if a given grid position within the bounds of the grid.
-
-        Args:
-            pos (Point, Point-like): The grid position to check.
-
-        Returns:
-            bool: True if `pos` is in bounds, False otherwise.
-        """
-        if not isinstance(pos, Point):
-            pos = Point(pos)
-        return Point(0, 0) <= pos < self._sim_size
-
-    def clamp_pos(self, pos):
-        """Clamps a given grid position to be within bounds of the grid.
-
-        Args:
-            pos (Point, Point-like): The grid position to clamp.
-
-        Returns:
-            Point: The clamped grid position.
-        """
-        if not isinstance(pos, Point):
-            pos = Point(pos)
-        return pos.clamp((0,0), self._sim_size)
-
-    def get_cell(self, pos):
-        """Return the item held at a given grid position. Clamps the grid position if needed.
-
-        Args:
-            pos (Point, Point-like): The grid position to retrieve the value of.
-
-        Returns:
-            BaseParticle: The particle located at the given grid position.
-            None: Returns `None` if there's no particle at the given grid position.
-        """
-        if not isinstance(pos, Point):
-            pos = Point(pos)
+    def get_cell(self, pos: Point) -> tuple[bool, Optional[BaseParticle]]:
         if not self.in_bounds(pos):
-            pos = self.clamp_pos(pos)
-        return self._sim_grid[pos.y][pos.x]
+            return (False, None)
+        return (True, self._sim_grid[pos.y][pos.x])
 
-    def move_particle(self, particle, pos):
-        """Moves a particle to a new grid position.
+    def grid_to_abs(self, grid_pos: Point) -> Point:
+        return Point(grid_pos.x * self._cell_size.x, grid_pos.y * self._cell_size.y)
 
-        Args:
-            particle (BaseParticle): The particle to move.
-            pos (Point, Point-like): The grid position to move the particle to.
-        """
-        old = self.get_pos(particle.rect.topleft)
-        self._sim_grid[old.y][old.x] = None
-        if not isinstance(pos, Point):
-            pos = Point(pos)
-        self._sim_grid[pos.y][pos.x] = particle
-        particle.rect.topleft = tuple(self._get_abs_pos(pos))
+    def abs_to_grid(self, abs_pos: Point) -> Point:
+        return Point(abs_pos.x // self._cell_size.x, abs_pos.y // self._cell_size.y)
 
-    def can_move(self, pos):
-        return self.in_bounds(pos) and self.get_cell(pos) is None
+    def get_particle_pos(self, particle: BaseParticle) -> Point:
+        return self.abs_to_grid(Point(particle.rect.topleft))
 
-    def get_pos(self, abs_pos):
-        """Get the grid position that corresponds to a given pixel position.
-
-        Args:
-            abs_pos (Point, Point-like): The pixel position to translate to a grid position.
-
-        Returns:
-            Point: The grid position that corresponds to the given pixel position.
-        """
-        if not isinstance(abs_pos, Point):
-            abs_pos = Point(abs_pos)
-        return Point(abs_pos.x // self._cell_width, abs_pos.y // self._cell_height)
+    def clamp_pos(self, pos: Point) -> Point:
+        return pos.clamp((0, 0), self._grid_size)
 
     def update(self, **kwargs):
-        """Update the simulation by one step.
-
-        This updates all the particles in the simulation and redraws the current sim state.
-        Newly created/added particles won't be updated, but they will be drawn. This prevents
-        an 'invisible' first update from occuring. The new particles then have their `dirty`
-        attribute reset, since it doesn't reset automatically for some reason. This prevents
-        them from being stuck for an extra frame.
-
-        Args:
-            **kwargs (any): Variable length list of keyword arguments. These arguments will be
-                passed into each particle's `update()` function.
-        """
-        for p in self._particle_group:
-            if p in self._new_particles:
-                continue
-            if p.active and p not in self._update_group:
-                self._update_group.add(p)
-            if not p.active and p in self._update_group:
-                self._update_group.remove(p)
-        #if len(self._particle_group) > 0:
-        #    print(f'Updating {100 * len(self._update_group) // len(self._particle_group)}% of all particles -- {len(self._update_group)} / {len(self._particle_group)}')
-        self._update_group.update(**kwargs, sim=self)
+        # update frame counter and active particle list
+        self._sim_frame += 1
+        # TODO: is it faster to create a new list every time?
+        # TODO: is it faster to just iterate over all particles?
+        for p in self._particles:
+            if p.active and p not in self._active_particles:
+                self._active_particles.append(p)
+            if not p.active and p in self._active_particles:
+                self._active_particles.remove(p)
+        # update kwargs then update the particles in a random order
+        kwargs[UpdateKwarg.SIM] = self
+        kwargs[UpdateKwarg.FRAME] = self._sim_frame
+        # TODO: would it help to remove particles from update list when recursive updates occur?
+        # for p in rand_iter(self._active_particles):
+        #     p.update(**kwargs)
+        self._update_queue = self._active_particles[:]
+        while self._update_queue:
+            i = randint(0, len(self._update_queue) - 1)
+            self._update_queue[i].update(**kwargs)
+        # draw the image
+        # TODO: do we need to blit the background first or can that be included in `draw()`?
         self.image.blit(self._background, (0, 0))
-        self._particle_group.draw(self.image)
-        self._new_particles = []
+        self._particles.draw(self.image) # bgsurf = self._background)
 
-    def add_particle(self, particle, pos):
-        """Add a particle to the simulation at a given grid position.
+    def remove_from_queue(self, particle: BaseParticle) -> None:
+        self._update_queue.remove(particle)
 
-        Newly added particles are added to a special list that gets cleared after each update.
+    def move_particle(self, particle: BaseParticle, new_pos: Point) -> None:
+        old_pos = self.get_particle_pos(particle)
+        self._sim_grid[old_pos.y][old_pos.x] = None
+        self._sim_grid[new_pos.y][new_pos.x] = particle
+        particle.rect.topleft = tuple(self.grid_to_abs(new_pos))
 
-        Args:
-            particle (BaseParticle): The particle to add.
-            pos (tuple): The grid position to add the particle at.
-
-        Returns:
-            bool: True if the particle was added, False otherwise.
-        """
-        if not isinstance(pos, Point):
-            pos = Point(pos)
-        if self._sim_grid[pos.y][pos.x] is not None:
+    def add_particle(self, particle: BaseParticle, grid_pos: tuple[int, int]) -> bool:
+        pos = Point(grid_pos)
+        in_bounds, dest_cell = self.get_cell(pos)
+        if not in_bounds or dest_cell is not None:
             return False
-        self._particle_group.add(particle)
         self._sim_grid[pos.y][pos.x] = particle
-        particle.rect.topleft = tuple(self._get_abs_pos(pos))
-        self._new_particles.append(particle)
+        self._particles.add(particle)
+        particle.rect.topleft = tuple(self.grid_to_abs(pos))
         return True
 
-    def remove_particle(self, pos):
-        if not isinstance(pos, Point):
-            pos = Point(pos)
-        if self._sim_grid[pos.y][pos.x] is None:
-            return False
-        p = self._sim_grid[pos.y][pos.x]
-        p.activate()
-        p.kill()
+    def remove_particle(self, pos: Point) -> None:
+        _, cell = self.get_cell(pos)
+        if cell is None:
+            return
+        cell.activate()
+        cell.kill()
         self._sim_grid[pos.y][pos.x] = None

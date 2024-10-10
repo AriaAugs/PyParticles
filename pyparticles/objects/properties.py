@@ -1,259 +1,145 @@
-from random import random
+from enum import Enum
+from typing import TYPE_CHECKING
 import pygame
-from pyparticles.engine. utils import Point, rand_iter
+from pyparticles.engine.utils import Point
 
-# TODO: add chained physics resolution, meaning particles will call `update()` on other
-# update-able particles that are blocking thier movement. This will allow for cool things,
-# such as entire piles of gravtity-affected particles falling at once or fluids flowing
-# more smoothly. However, this will be difficult since we need to track which particles
-# have been called in the resolution chain to prevent infinite loops and repeat work,
-# but this tracking value must also be reset after each chain resolves
+if TYPE_CHECKING:
+    from pyparticles.engine.simulation import ParticleSim
+
+# NOTE: this only works on Python 3.10 and LOWER
+# For Python 3.11+, use StrEnume
+class UpdateKwarg(str, Enum):
+    FRAME: str = 'current_frame'
+    SIM: str = 'simulation_world'
+    FUNCS: str = 'particle_behaviors'
+
+class ParticleUpdate(Exception):
+    pass
 
 class BaseParticle(pygame.sprite.Sprite):
-    """Base class for all other particles.
 
-    Subclasses must assign `image` and `rect` attributes for the sprites to render properly.
+    image: pygame.Surface
+    rect: pygame.Rect
+    frame: int
+    active: bool
+    keep_active: bool
+    dependants: list['BaseParticle']
+    depends_on: list[Point]
 
-    This is designed to work in a hybrid inheritence approach. The `__init__()` methods will
-    work cooperatively, each calling `super().__init__()` to ensure a given particle initializes
-    all its properties. The `update()` methods, however, will work in a more separate fashion,
-    where none of the `update()` methods call `super().update()`. This allows a given particle
-    type to control the order in which it executes specific behavior.
-
-    Args:
-        **kwargs (any): Variable length list of keyword arguments. The following keyword arguments
-            are recognized:\n
-            - groups (list): List of groups to add this sprite to. Defaults to None.
-
-    Attributes:
-        image (pygame.Surface): The image for this sprite.
-        rect (pygame.Rect): The rectangle corresponding to the location and size of this sprite.
-        updated (bool): Dirty bit for the sprite. If True, the sprite has been updated this frame.
-        updateable (bool): Whether or not this particle can update itself, assuming all
-            probabilistic behavior triggers.
-        dependants (list[BaseParticle]): Particles that can interact with this particle when active
-        active (bool): active state of particle
-    """
-
-    # dirty: int
-    # image: pygame.Surface
-    # rect: pygame.Rect
-
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            if key == 'groups':
-                pygame.sprite.Sprite.__init__(self, *value)
-                return
-        pygame.sprite.Sprite.__init__(self)
+    def __init__(self, *args) -> None:
+        groups = []
+        for arg in args:
+            if isinstance(arg, pygame.sprite.Group):
+                groups.append(arg)
+        pygame.sprite.Sprite.__init__(self, *groups)
         # initialize attributes to default values
-        self.image = None
-        self.rect = None
-        self.updated = True
-        self._updateable = True
-        self._dependants = []
+        self.image = None # type: ignore
+        self.rect = None # type: ignore
+        self.frame = -1
         self.active = True
+        self.keep_active = False # True if updated or could be updated
+        self.dependants = []
         # Vector list of particles this depends on to be activated. Values are set by the init
         # functions of subclasses, and this list remains unchanged afterwards. If this particle
         # fails to update and all the particles it depends on are deactivated, then this particle
         # will deactivate.
-        self._depends_on = []
+        self.depends_on = []
 
-    def add_dependant(self, particle):
-        self._dependants.append(particle)
+    # def pos_as_point(self) -> Point:
+    #     return Point(self.rect.topleft)
 
-    def activate(self):
-        self.active = True
-        while len(self._dependants) > 0:
-            self._dependants.pop().activate()
-        # TODO: some way to call update() to update particles on same frame they were activated on?
+    def updateable(self, current_frame: int) -> bool:
+        # TODO: do we want this to require that the particle be active?
+        return self.active and self.frame < current_frame
 
-    def pre_update(self):
-        self.updated = False
-        self._updateable = False
+    def add_dependant(self, particle: 'BaseParticle') -> None:
+        self.dependants.append(particle)
+        self.dependants.pop()
 
-    def update(self, **kwargs):
-        """Method to control sprite behavior.
-
-        Default method does nothing. To implement specific behavior, it must be overridden by
-        subclasses. These implementations should be prefaced by `if self.dirty != 0: pass` to
-        prevent the particle from being updated multiple times per frame.
-        """
-        if self.updated or self._updateable:
-            while len(self._dependants) > 0:
-                self._dependants.pop().activate()
+    def activate(self) -> None:
+        # sanity check
+        if self.active:
+            print('Already active!')
             return
-        sim = kwargs['sim']
-        pos = sim.get_pos(self.rect.topleft)
-        for d in self._depends_on:
-            p = sim.get_cell(pos + d)
+        self.active = True
+        self.activate_dependants()
+
+    def activate_dependants(self) -> None:
+        while len(self.dependants) > 0:
+            self.dependants.pop().activate()
+
+    # def pre_update(self, **kwargs) -> None:
+    #     self.frame = kwargs[UpdateKwarg.FRAME]
+    #     self.keep_active = False
+
+    def update(self, **kwargs) -> None:
+        # pre update - make sure we haven't already updated and update attributes
+        current_frame = kwargs[UpdateKwarg.FRAME]
+        if current_frame <= self.frame:
+            print('Already updated')
+            return
+        self.frame = current_frame
+        self.keep_active = False
+        # update - do specific behaviors until we update
+        try:
+            for behavior in kwargs[UpdateKwarg.FUNCS]:
+                behavior(self, **kwargs)
+        except ParticleUpdate:
+            self.keep_active = True
+        # post-update - check if the particle is still active
+        self.active = self.keep_active
+        sim: ParticleSim = kwargs[UpdateKwarg.SIM]
+        sim.remove_from_queue(self)
+        if self.active:
+            self.activate_dependants()
+            return
+        pos = sim.get_particle_pos(self)
+        for d in self.depends_on:
+            _, p = sim.get_cell(pos + d)
             if p is not None:
                 p.add_dependant(self)
-        self.active = False
 
-class GravityArgs():
-    def __init__(self, vec=(0,0), prob=1.0):
-        self.vec = Point(vec)
+class GravitySpec():
+
+    vec: Point
+    prob: float
+
+    def __init__(self, vec: Point = Point(0, 1), prob: float = 1.0) -> None:
+        self.vec = vec
         self.prob = prob
 
     def copy(self):
-        return GravityArgs(vec=self.vec, prob=self.prob)
+        return GravitySpec(self.vec, self.prob)
 
 class GravityParticle(BaseParticle):
-    """Particle with gravity (or any other kind of constant linear force)
 
-    Args:
-        **kwargs: Variable length list of keyword arguments. The following keyword arguments are
-            recognized:\n
-            - gravity (GravityArgs): GravityArgs object representing the direction and probability
-                of this particle's gravity.
-            - gravity_vec (Point, Point-like): X,Y vector representing the force to be applied
-                to the particle. Defaults to (0, 0).
-            - gravity_prob (float): Probablity (from 0.0 to 1.0) that the particle will update due to
-                this property. Defaults to 1.0.
+    gravity: GravitySpec
 
-    Attributes:
-        gravity (GravityArgs): The gravity vector and probability of the particle.
-    """
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.gravity = GravityArgs()
-        for key, value in kwargs.items():
-            if key == 'gravity':
-                self.gravity = value.copy()
-            if key == 'gravity_vec':
-                self.gravity.vec = Point(value)
-            if key == 'gravity_prob':
-                self.gravity.prob = value
-        self._depends_on.append(self.gravity.vec)
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.gravity = GravitySpec()
+        for arg in args:
+            if isinstance(arg, GravitySpec):
+                self.gravity = arg.copy()
+                break
+        self.depends_on.append(self.gravity.vec)
 
     def update(self, **kwargs):
-        if self.updated:
-            return
-        sim = kwargs['sim']
-        # apply gravity and clamp the new position
-        dest_pos = sim.get_pos(self.rect.topleft) + self.gravity.vec
-        # we can't move because we're at the edge of the sim
-        if not sim.in_bounds(dest_pos):
-            return
-        # try to move to the new position
-        # TODO: chained physics resolution
-        dest_cell = sim.get_cell(dest_pos)
-        if dest_cell is None: # particle can move
-            if random() < self.gravity.prob:
-                sim.move_particle(self, dest_pos)
-                self.updated = True
-            else: # particle failed random check, but could've moved
-                self._updateable = True
-            return
-        # particle is blocked - cehck if blocking particle is active
-        if dest_cell.active:
-            self._updateable = True
-
-class HeapArgs():
-    def __init__(self, vecs=None, prob=1.0, limits=None, stuck=False):
-        self.vecs = []
-        if vecs is not None:
-            for v in vecs:
-                self.vecs.append(Point(v))
-        self.prob = prob
-        self.limits = []
-        if limits is not None:
-            for v in limits:
-                self.limits.append(Point(v))
-        self.stuck = stuck
-
-    def copy(self):
-        return HeapArgs(vecs=self.vecs, prob=self.prob, limits=self.limits, stuck=self.stuck)
-
-class HeapableParticle(BaseParticle):
-    """Particle that can form heaps/piles.
-
-    Does not inherit from GravityParticle, but subclasses must inherit from GravityParticle. To
-    ensure ideal behavior, inherit from GravityParticle immediately before this, so particles will
-    immediately try to form heaps is they cannot fall.
-
-    Args:
-        **kwargs: Variable length list of keyword arguments. The following keyword arguments are
-            recognized:\n
-            - heap_vec (list[Point], list[Point-like]): List of x,y vectors representing the
-                directions this particle can move to form heaps. Defaults to [].
-            - heap_prob (float): Probablity (from 0.0 to 1.0) that the particle will update due to
-                this property. This can be thought of as the particle's 'friction'.
-                Defaults to 1.0.
-            - heap_limit (list[Point], list[Point-like]): List of x,y vectors that will force this
-                particle to fall if any of them are empty. Defaults to [].
-            - heap_stuck (bool): Whether or not
-
-    Attributes:
-        TODO
-    """
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.heap = HeapArgs()
-        for key, value in kwargs.items():
-            if key == 'heap':
-                self.heap = value.copy()
-            if key == 'heap_vec':
-                for p in value:
-                    self.heap.vecs.append(Point(p))
-            if key == 'heap_prob':
-                self.heap.prob = value
-            if key == 'heap_limit':
-                for p in value:
-                    self.heap.limits.append(Point(p))
-            if key == 'heap_stuck':
-                self.heap.stuck = value
-        if self.heap.vecs is not None and self.heap.prob >= 1.0:
-            self._depends_on.extend(self.heap.vecs)
-        if self.heap.limits is not None:
-            self._depends_on.extend(self.heap.limits)
-
-    def _move(self, sim, dest_pos):
-        sim.move_particle(self, dest_pos)
-        self.heap.stuck = False
-        self.updated = True
-
-    def update(self, **kwargs):
-        if self.updated:
-            return
-        sim = kwargs['sim']
-        limit_triggered = False
-        # check if this particle is on top of another particle
-        pos = sim.get_pos(self.rect.topleft)
-        dest_pos = pos + self.gravity.vec
-        if sim.in_bounds(dest_pos) and sim.get_cell(dest_pos) is None:
-            return
-        # check if this particle is at its heap limit
-        for lim_vec in rand_iter(self.heap.limits):
-            dest_pos = pos + lim_vec
-            if not sim.in_bounds(dest_pos):
-                continue
-            if sim.get_cell(dest_pos) is None:
-                dest_pos = pos + lim_vec.get_normalized()
-                if not sim.in_bounds(dest_pos):
-                    continue
-                dest_cell = sim.get_cell(dest_pos)
-                if dest_cell is None:
-                    self._move(sim, dest_pos)
-                    return
-                limit_triggered = True
-                self._updateable |= dest_cell.active
-        # check if the particle is stuck in place
-        if self.heap.stuck or limit_triggered:
-            return
-        # try to form a heap
-        for heap_vec in rand_iter(self.heap.vecs):
-            dest_pos = pos + heap_vec
-            if not sim.in_bounds(dest_pos):
-                continue
-            dest_cell = sim.get_cell(dest_pos)
-            if dest_cell is None:
-                if random() >= self.heap.prob:
-                    self.heap.stuck = True
-                    return
-                self._move(sim, dest_pos)
+        sim = kwargs[UpdateKwarg.SIM]
+        frame = kwargs[UpdateKwarg.FRAME]
+        # get our destination position
+        dest_pos = sim.get_particle_pos(self) + self.gravity.vec
+        for attempt in range(2):
+            # check that the destination is in bounds and empty
+            dest_valid, dest_cell = sim.get_cell(dest_pos)
+            if not dest_valid:
                 return
-            if self.heap.prob >= 1.0:
-                self._updateable |= dest_cell.active
+            if dest_cell is None:
+                sim.move_particle(self, dest_pos)
+                raise ParticleUpdate()
+            if attempt == 0 and dest_cell.updateable(frame):
+                dest_cell.update(**kwargs)
+            # TODO: do we need this?
+            # maybe not after adding a call to `update()` in the `activate()` function
+            if attempt == 1 and dest_cell.active:
+                self.keep_active = True

@@ -39,7 +39,7 @@ def print_info(abs_pos, sim):
         print(f'  Depends on cell at {d_pos.x},{d_pos.y} with active state: {d.active}')
 
 def paint(sim, adding):
-    pos = sim.get_pos(pygame.mouse.get_pos())
+    pos = sim.abs_to_grid(Point(pygame.mouse.get_pos()))
     for x in range(-1*brush_size, brush_size+1, 1):
         for y in range(-1*brush_size, brush_size+1, 1):
             off = Point(x, y)
@@ -54,9 +54,9 @@ def paint(sim, adding):
 
 def main():
     pygame.init()
-    sim = simulation.ParticleSim((50, 50), (12, 12), bg_clr='pink')
+    sim = simulation.ParticleSim((40, 40), (12, 12), background='black')
 
-    screen = pygame.display.set_mode((600, 600))
+    screen = pygame.display.set_mode((40*12, 40*12))
     clock = pygame.time.Clock()
 
     running = True
@@ -67,8 +67,8 @@ def main():
     adding = False
     removing = False
 
-    sim.add_particle(particles.TestParticle(), (10,46))
-    sim.add_particle(particles.TestParticle(), (10,47))
+    #sim.add_particle(particles.TestParticle(), (10,46))
+    #sim.add_particle(particles.TestParticle(), (10,47))
 
     global brush_size
 
