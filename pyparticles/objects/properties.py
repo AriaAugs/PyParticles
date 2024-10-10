@@ -54,7 +54,6 @@ class BaseParticle(pygame.sprite.Sprite):
 
     def add_dependant(self, particle: 'BaseParticle') -> None:
         self.dependants.append(particle)
-        self.dependants.pop()
 
     def activate(self) -> None:
         # sanity check
@@ -67,10 +66,6 @@ class BaseParticle(pygame.sprite.Sprite):
     def activate_dependants(self) -> None:
         while len(self.dependants) > 0:
             self.dependants.pop().activate()
-
-    # def pre_update(self, **kwargs) -> None:
-    #     self.frame = kwargs[UpdateKwarg.FRAME]
-    #     self.keep_active = False
 
     def update(self, **kwargs) -> None:
         # pre update - make sure we haven't already updated and update attributes
