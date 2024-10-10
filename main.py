@@ -17,26 +17,26 @@ from pstats import SortKey
 brush_size = 1
 
 def print_info(abs_pos, sim):
-    pos = sim.get_pos(abs_pos)
-    cell = sim.get_cell(pos)
+    pos = sim.abs_to_grid(Point(abs_pos))
+    _, cell = sim.get_cell(pos)
     if cell is None:
         print('Empty cell! No info to print...')
         return
     print(f'Selected {cell}')
-    pos = sim.get_pos(cell.rect.topleft)
+    pos = sim.get_particle_pos(cell)
     print(f'  Cell located at: {pos.x},{pos.y}')
-    print(f'  Cell dirty is: {cell.updated}')
-    print(f'  Cell can be updated: {cell._updateable}')
+    #print(f'  Cell dirty is: {cell.updated}')
+    #print(f'  Cell can be updated: {cell._updateable}')
     print(f'  Cell state is: {cell.active}')
-    print(f'  Cell stuck is: {cell.heap.stuck}')
-    depends_on = []
-    for p in sim._particle_group:
-        if cell in p._dependants:
-            depends_on.append(p)
-    print(f'Depends on {len(depends_on)} other cells to remain inactive')
-    for d in depends_on:
-        d_pos = sim.get_pos(d.rect.topleft)
-        print(f'  Depends on cell at {d_pos.x},{d_pos.y} with active state: {d.active}')
+    #print(f'  Cell stuck is: {cell.heap.stuck}')
+    #depends_on = []
+    #for p in sim._particle_group:
+    #    if cell in p._dependants:
+    #        depends_on.append(p)
+    print(f'Depends on {len(cell.depends_on)} other cells to remain inactive')
+    #for d in depends_on:
+    #    d_pos = sim.get_pos(d.rect.topleft)
+    #    print(f'  Depends on cell at {d_pos.x},{d_pos.y} with active state: {d.active}')
 
 def paint(sim, adding):
     pos = sim.abs_to_grid(Point(pygame.mouse.get_pos()))
