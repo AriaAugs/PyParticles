@@ -88,6 +88,9 @@ class ParticleSim():
         self._particles.draw(self.image) # bgsurf = self._background)
 
     def remove_from_queue(self, particle: BaseParticle) -> None:
+        if particle not in self._update_queue:
+            print('Request to remove particle not in update queue!')
+            return
         self._update_queue.remove(particle)
 
     def move_particle(self, particle: BaseParticle, new_pos: Point) -> None:

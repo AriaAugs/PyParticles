@@ -247,7 +247,9 @@ if __name__ == '__main__':
 
     if PROFILE_MAIN:
         pr = cProfile.Profile()
+        pr.enable()
         main()
+        pr.disable()
         st = io.StringIO()
         sortby = SortKey.CUMULATIVE
         ps = pstats.Stats(pr, stream=st).sort_stats(sortby)

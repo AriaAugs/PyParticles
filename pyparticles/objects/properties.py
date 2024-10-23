@@ -1,7 +1,8 @@
 from enum import Enum
 from typing import TYPE_CHECKING
 import pygame
-from pyparticles.engine.utils import Point
+from pyparticles.engine.utils import rand_iter, Point
+from random import random
 
 if TYPE_CHECKING:
     from pyparticles.engine.simulation import ParticleSim
@@ -80,6 +81,8 @@ class BaseParticle(pygame.sprite.Sprite):
             for behavior in kwargs[UpdateKwarg.FUNCS]:
                 behavior(self, **kwargs)
         except ParticleUpdate:
+            # TODO: we need a better way to reset certain particle attributes when this particle is updated
+            self.heap.stuck = False
             self.keep_active = True
         # post-update - check if the particle is still active
         self.active = self.keep_active
@@ -138,3 +141,82 @@ class GravityParticle(BaseParticle):
             # maybe not after adding a call to `update()` in the `activate()` function
             if attempt == 1 and dest_cell.active:
                 self.keep_active = True
+
+class HeapSpec():
+    vecs: list[Point]
+    prob: float
+    lims: dict[tuple[int, int], Point]
+    stuck: bool
+
+    def __init__(self, vecs: list[Point] = [], prob: float = 1.0, lims: dict[tuple[int, int], Point] = {}) -> None:
+        self.stuck = False
+        self.lims = {}
+        for k, v in lims.items():
+            self.lims[k] = Point(v)
+        self.prob = prob
+        self.vecs = []
+        if prob < 1.0:
+            for v in vecs:
+                self.vecs.append(Point(v))
+        else:
+            for v in vecs:
+                self.lims[(v.x, v.y)] = Point(v)
+
+    def copy(self):
+        return HeapSpec(self.vecs, self.prob, self.lims)
+
+class HeapParticle(BaseParticle):
+
+    heap: HeapSpec
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.heap = HeapSpec()
+        for arg in args:
+            if isinstance(arg, HeapSpec):
+                self.heap = arg.copy()
+                break
+        for v in self.heap.vecs:
+            self.depends_on.append(v)
+        for k, v in self.heap.lims.items():
+            self.depends_on.append(v)
+
+    def update(self, **kwargs):
+        sim: ParticleSim = kwargs[UpdateKwarg.SIM]
+        frame: int = kwargs[UpdateKwarg.FRAME]
+        # get our current position
+        self_pos = sim.get_particle_pos(self)
+        # check limits
+        for lim in rand_iter(list(self.heap.lims.keys())):
+            lim_valid, lim_cell = sim.get_cell(self_pos + lim)
+            if not lim_valid:
+                continue
+            for attempt in range(2):
+                if lim_cell is None:
+                    sim.move_particle(self, self_pos + self.heap.lims[lim])
+                    raise ParticleUpdate()
+                if attempt == 0 and lim_cell.updateable(frame):
+                    lim_cell.update(**kwargs)
+                if attempt == 1 and lim_cell.active:
+                    self.keep_active = True
+        # limits didn't trigger - check probabilistic vectors if not stuck
+        if self.heap.stuck:
+            return
+        for vec in rand_iter(self.heap.vecs):
+            dest_valid, dest_cell = sim.get_cell(self_pos + vec)
+            if not dest_valid:
+                continue
+            for attempt in range(2):
+                if dest_cell is None:
+                    if random() < self.heap.prob:
+                        sim.move_particle(self, self_pos + vec)
+                        raise ParticleUpdate()
+                    else:
+                        self.heap.stuck = True
+                        # TODO: make this the same as everything else
+                        # Update exception or add a new exception to determine when we should reset states
+                        return
+                if attempt == 0 and dest_cell.updateable(frame):
+                    dest_cell.update(**kwargs)
+                if attempt == 1 and dest_cell.active:
+                    self.keep_active = True

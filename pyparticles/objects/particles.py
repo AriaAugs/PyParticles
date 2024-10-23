@@ -17,7 +17,7 @@ _SPRITES = [[
     for x in range(2)] for y in range(2)]
 
 class TestParticle(
-    #properties.HeapableParticle,
+    properties.HeapParticle,
     properties.GravityParticle,
     properties.BaseParticle):
     """Test particle
@@ -27,6 +27,7 @@ class TestParticle(
 
     def __init__(self, **kwargs):
         super().__init__(
+            properties.HeapSpec(vecs = [Point(1, 1), Point(-1, 1)], prob = 0.99, lims = {}),#(1, 2) : Point(1, 1), (-1, 2) : Point(-1, 1)}),
             properties.GravitySpec(vec = Point(0, 1), prob = 1.0)
             )
         self.image = _SPRITES[randint(0, 1)][randint(0, 1)]
@@ -35,5 +36,6 @@ class TestParticle(
     def update(self, **kwargs):
         kwargs[properties.UpdateKwarg.FUNCS] = [
             properties.GravityParticle.update
+            #properties.HeapParticle.update
         ]
         properties.BaseParticle.update(self, **kwargs)
